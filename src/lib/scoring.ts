@@ -20,6 +20,15 @@ import type {
   PageSpeedDiagnostics,
   YouTubeDiagnostics,
 } from "./types";
+import { analyzeSpecialtyCoverage } from "./specialtyProfiles";
+
+/** 症状名リストを「A」「B」「C」形式で先頭 n 件だけ整形 */
+function quoteList(items: string[], n = 3): string {
+  return items
+    .slice(0, n)
+    .map((s) => `「${s}」`)
+    .join("");
+}
 
 /** スコア計算に渡す診断素材。websiteText はサーバー内部のみで使用（レポートには保存しない）。 */
 export type DiagnosticsBundle = {
@@ -220,23 +229,54 @@ export function calculateSeoContentScore(b: DiagnosticsBundle): ScoreDetail {
     negatives.push("h1 見出しが確認できませんでした");
   }
 
-  const medicalHits = countKeywordHits(text, SEO_MEDICAL_KEYWORDS);
-  if (medicalHits >= 3) {
-    score += 5;
-    positives.push("診療科・疾患・症状に関するコンテンツが存在しそうです");
-  } else if (medicalHits >= 1) {
-    score += 2;
-    positives.push("診療内容に関する記載は一部確認できます");
-    negatives.push("疾患別・症状別ページの拡充余地があります");
+  // 診療科プロファイルに基づく症状カバレッジで、疾患・症状ページの充実度を評価
+  const cov = analyzeSpecialtyCoverage(b.input.specialty, text);
+  if (cov.profile) {
+    const presentCount = cov.present.length;
+    if (presentCount >= 4) {
+      score += 5;
+      positives.push(
+        `${cov.profile.label}で想定される症状ページが複数見られます（${quoteList(cov.present)}など）`,
+      );
+    } else if (presentCount >= 1) {
+      score += 2;
+      positives.push(
+        `症状ページは一部確認できます（${quoteList(cov.present)}など）`,
+      );
+      negatives.push(
+        `${cov.profile.label}では ${quoteList(cov.missing)} など症状別ページが不足している可能性があります。地域名×症状の検索からの初診獲得では、診療科トップページだけでは弱くなりがちです`,
+      );
+    } else {
+      negatives.push(
+        `${cov.profile.label}で検索されやすい ${quoteList(cov.missing, 4)} などの症状別ページが確認できませんでした。症状ごとの解説ページを用意すると、指名検索以外からの初診流入を増やしやすくなります`,
+      );
+    }
   } else {
-    negatives.push("診療科ページ・疾患ページらしき内容が確認できませんでした");
+    // 診療科を判定できない場合は汎用キーワードで評価
+    const medicalHits = countKeywordHits(text, SEO_MEDICAL_KEYWORDS);
+    if (medicalHits >= 3) {
+      score += 5;
+      positives.push("診療科・疾患・症状に関するコンテンツが存在しそうです");
+    } else if (medicalHits >= 1) {
+      score += 2;
+      positives.push("診療内容に関する記載は一部確認できます");
+      negatives.push("疾患別・症状別ページの拡充余地があります");
+    } else {
+      negatives.push("診療科ページ・疾患ページらしき内容が確認できませんでした");
+    }
   }
 
-  if (textIncludesAny(text, SYMPTOM_LINK_KEYWORDS) && (w?.internalLinkCount ?? 0) >= 5) {
+  const hasSymptomLinks =
+    cov.profile && cov.present.length > 0
+      ? cov.present.length >= 2 && (w?.internalLinkCount ?? 0) >= 5
+      : textIncludesAny(text, SYMPTOM_LINK_KEYWORDS) && (w?.internalLinkCount ?? 0) >= 5;
+  if (hasSymptomLinks) {
     score += 4;
     positives.push("症状・疾患名を含む内部リンク導線が見られます");
   } else {
-    negatives.push("症状・疾患名を起点とした内部リンク導線が弱い可能性があります");
+    negatives.push(
+      "症状・疾患名を起点とした内部リンク（例: 症状ページ→医師紹介→予約）の導線が弱い可能性があります",
+    );
   }
 
   if (textIncludesAny(text, BLOG_KEYWORDS)) {
@@ -600,88 +640,156 @@ function weakestCategory(scores: Scores): ScoreDetail | null {
 export function generateQuickWins(scores: Scores, b: DiagnosticsBundle): Recommendation[] {
   const recs: Recommendation[] = [];
   const w = b.website;
+  const cov = analyzeSpecialtyCoverage(b.input.specialty, b.websiteText);
 
-  if (!w?.hasTelLink) {
+  const hasBooking = !!(w?.hasBookingLink || b.input.bookingUrl);
+  const hasLine = !!(w?.hasLineLink || b.input.lineUrl);
+
+  // 1) ファーストビューの予約導線
+  if (!(w?.hasBookingLink || b.input.bookingUrl) || (w?.ctaKeywordPages ?? 0) < 2) {
     recs.push({
-      id: "qw-tel",
-      title: "スマホ発信できる tel: リンクを設置する",
-      detail:
-        "電話番号を tel: リンク化し、ファーストビュー付近に固定配置すると、スマホからの初診電話につながりやすくなります。",
+      id: "qw-booking-firstview",
+      title: "スマホのファーストビューに予約導線を固定する",
+      detail: "広告・SNS・検索から流入しても予約導線が見つからないと離脱につながります。",
+      whyImportant:
+        "広告・SNS・検索から流入しても、ファーストビューに予約ボタンが見当たらないと、初診予約まで進む前に離脱しやすくなります。",
+      whatToFix:
+        "スマホ表示の最上部に「Web予約」「電話する」「LINE相談」のいずれかを常時表示（固定ヘッダー等）してください。初診と再診でボタンを分けると、初診の迷いを減らせます。",
+      expectedEffect:
+        "流入から予約完了までの離脱を減らせる可能性があります。ただし実際の効果測定には、日別初診数と流入データの連携が必要です。",
+      difficulty: "低",
+      priority: "高",
       impact: "high",
       effort: "low",
       relatedScore: "websiteConversion",
     });
   }
-  if (!(w?.hasBookingLink || b.input.bookingUrl)) {
+
+  // 2) tel: リンク
+  if (!w?.hasTelLink) {
     recs.push({
-      id: "qw-booking",
-      title: "Web予約への導線を主要ページに追加する",
-      detail:
-        "Web予約ボタンをヘッダーやファーストビューに常設し、初診と再診で導線を分けると離脱を防げます。",
+      id: "qw-tel",
+      title: "電話番号をタップ発信できる tel: リンクにする",
+      detail: "スマホから番号をタップしてそのまま発信できる状態にします。",
+      whyImportant:
+        "高齢層や急ぎの初診では、電話予約が主要導線になります。番号が画像やテキストのみだと、スマホからワンタップで発信できず取りこぼしが生じます。",
+      whatToFix:
+        "電話番号を tel: リンク化し、ファーストビュー付近と各ページのフッターに配置してください。受付時間も併記すると、時間外の不満を減らせます。",
+      expectedEffect:
+        "スマホからの初診電話につながりやすくなります。効果の定量把握には通話計測（コールトラッキング）の導入が有効です。",
+      difficulty: "低",
+      priority: hasBooking ? "中" : "高",
       impact: "high",
-      effort: "medium",
+      effort: "low",
       relatedScore: "websiteConversion",
     });
   }
-  if (scores.seoContent.score < 15) {
+
+  // 3) 症状別ページ（診療科に応じて具体化）
+  if (scores.seoContent.score < 18) {
+    const missing = cov.profile ? cov.missing : [];
+    const label = cov.profile?.label ?? "診療科";
+    const examples = missing.length ? quoteList(missing, 3) : "主要な症状・疾患";
     recs.push({
       id: "qw-symptom",
-      title: "代表的な症状・疾患ごとのページを整備する",
-      detail:
-        "診療科の主要な症状・疾患ごとにページを作り、内部リンクでつなぐと、検索からの初診流入を増やしやすくなります。",
+      title: cov.profile
+        ? `${label}の症状別ページ（${examples}など）を追加する`
+        : "代表的な症状・疾患ごとのページを整備する",
+      detail: "症状ごとの解説ページを作り、内部リンクで予約へつなぎます。",
+      whyImportant:
+        "「地域名 × 症状」で検索する初診患者は、診療科トップページよりも症状別ページに着地しやすく、症状ページが無いと検索からの初診流入を取りこぼします。",
+      whatToFix: cov.profile
+        ? `${examples} など、貴院で対応可能な症状ごとに解説ページを作成し、各ページから医師紹介・予約へ内部リンクを張ってください。`
+        : "貴院で対応可能な主要な症状・疾患ごとに解説ページを作成し、各ページから予約へ内部リンクを張ってください。",
+      expectedEffect:
+        "指名検索以外（症状検索）からの初診流入を増やしやすくなります。実際の寄与度の測定には、Search Console と日別初診数の連携が必要です。",
+      difficulty: "高",
+      priority: "高",
       impact: "high",
       effort: "high",
       relatedScore: "seoContent",
     });
   }
-  if (!b.input.googleMapsUrl) {
+
+  // 4) YouTube → 予約導線（運用があるのに戻し導線が弱い場合）
+  if (b.input.youtubeUrl && !(hasBooking || hasLine)) {
     recs.push({
-      id: "qw-gbp",
-      title: "GoogleビジネスプロフィールのURLを整備・掲載する",
-      detail:
-        "GBPを整備し、HPからも地図リンクを設置すると、近隣からの来院（MEO）につながりやすくなります。",
-      impact: "medium",
-      effort: "low",
-      relatedScore: "meoReadiness",
-    });
-  }
-  if (scores.snsConnection.score < 8) {
-    recs.push({
-      id: "qw-sns-return",
-      title: "SNSプロフィールからHP/予約へ戻す導線を設ける",
-      detail:
-        "各SNSのプロフィール欄に予約URLを掲載し、投稿からHPの症状ページへ誘導すると、認知を来院につなげやすくなります。",
+      id: "qw-youtube-return",
+      title: "YouTube視聴者をHP・予約へ戻す導線を作る",
+      detail: "動画の概要欄・終了画面から予約ページへ誘導します。",
+      whyImportant:
+        "YouTubeアカウントは入力されていますが、HP・予約ページ・LINEへの導線が弱いと、視聴が来院に結びつきません。視聴後の行動先が不明確なままになっています。",
+      whatToFix:
+        "各動画の概要欄の先頭に予約URLを掲載し、終了画面・固定コメントからも予約ページへ誘導してください。症状解説動画は、その症状ページへリンクすると効果的です。",
+      expectedEffect:
+        "動画視聴からの来院につながりやすくなります。効果測定にはYouTube Analyticsと予約計測の連携が必要です。",
+      difficulty: "低",
+      priority: "中",
       impact: "medium",
       effort: "low",
       relatedScore: "snsConnection",
     });
   }
-  if (scores.mmmReadiness.score < 6) {
+
+  // 5) GBP（MEO）
+  if (!b.input.googleMapsUrl || !w?.hasGoogleMapsLink) {
+    recs.push({
+      id: "qw-gbp",
+      title: "Googleビジネスプロフィールを整備しHPから地図リンクを張る",
+      detail: "近隣からの「地図・マップ検索」からの来院を取りこぼさないようにします。",
+      whyImportant:
+        "近隣の患者は Google マップや「地域名＋診療科」で医院を探します。GBPが未整備・HPから地図リンクが無いと、来院直前の患者を取りこぼします。",
+      whatToFix:
+        "GBPの診療時間・電話・住所・カテゴリ・写真を整備し、HPの情報と一致させたうえで、アクセスページからGoogleマップへリンクしてください。",
+      expectedEffect:
+        "近隣からの来院（MEO）につながりやすくなります。口コミ数・表示回数などの定量把握にはGBPインサイトの連携が必要です。",
+      difficulty: "中",
+      priority: "中",
+      impact: "medium",
+      effort: "low",
+      relatedScore: "meoReadiness",
+    });
+  }
+
+  // 6) MMM のためのデータ整備
+  if (scores.mmmReadiness.score < 7) {
     recs.push({
       id: "qw-mmm-data",
       title: "日別初診数の記録を今日から始める",
-      detail:
-        "日別初診数（と休診日）の記録を始めると、将来のMMMで施策別の初診寄与を推定できるようになります。",
+      detail: "施策効果を後から測るための、最も重要な土台データです。",
+      whyImportant:
+        "どの施策が初診数に効いたかを推定するMMMでは、日別初診数が目的変数になります。ここが無いと、将来的にも施策別の効果を評価できません。",
+      whatToFix:
+        "スプレッドシートで構いません。日付・初診数・休診日を毎日記録し、あわせて広告費・投稿日も月次でまとめ始めてください。",
+      expectedEffect:
+        "数か月分たまると、HP記事・広告・SNS・ポスティングが初診数にどれだけ寄与したかを推定できる状態（有料版MMM）に近づきます。",
+      difficulty: "低",
+      priority: "中",
       impact: "high",
       effort: "low",
       relatedScore: "mmmReadiness",
     });
   }
 
-  // 上位3件に絞る（impact 高 > effort 低 を優先）
-  const rank = (r: Recommendation) =>
-    (r.impact === "high" ? 0 : r.impact === "medium" ? 1 : 2) +
-    (r.effort === "low" ? 0 : r.effort === "medium" ? 0.3 : 0.6);
-  return recs.sort((a, c) => rank(a) - rank(c)).slice(0, 3);
+  // 優先度（高>中>低）→ 難易度（低>中>高）で並べ、上位3件
+  const prScore = (r: Recommendation) => (r.priority === "高" ? 0 : r.priority === "中" ? 1 : 2);
+  const dfScore = (r: Recommendation) =>
+    r.difficulty === "低" ? 0 : r.difficulty === "中" ? 0.3 : 0.6;
+  return recs.sort((a, c) => prScore(a) - prScore(c) + (dfScore(a) - dfScore(c))).slice(0, 3);
 }
 
 /** 「伸ばせる余地が大きい3点」= 達成率の低いカテゴリ由来の提案 */
-export function generateGrowthOpportunities(scores: Scores): Recommendation[] {
+export function generateGrowthOpportunities(scores: Scores, b: DiagnosticsBundle): Recommendation[] {
   const entries = (Object.entries(scores) as [keyof Scores, ScoreDetail][])
     .filter(([key]) => key !== "medicalAdRisk") // リスクは別枠で扱う
     .map(([key, s]) => ({ key, s, ratio: s.score / s.maxScore, gap: s.maxScore - s.score }))
     .sort((a, c) => a.ratio - c.ratio)
     .slice(0, 3);
+
+  const cov = analyzeSpecialtyCoverage(b.input.specialty, b.websiteText);
+  const seoDetail = cov.profile
+    ? `${cov.profile.label}で検索されやすい ${quoteList(cov.missing.length ? cov.missing : cov.profile.symptoms, 3)} などの症状ページとコラムを継続的に増やし、内部リンクで予約へつなぐことで、指名検索以外の初診流入を育てられます。`
+    : "疾患ページとコラムを継続的に増やし、内部リンクで導線を作ることで、指名検索以外の初診流入を育てられます。";
 
   const templates: Record<string, { title: string; detail: string }> = {
     websiteConversion: {
@@ -691,8 +799,7 @@ export function generateGrowthOpportunities(scores: Scores): Recommendation[] {
     },
     seoContent: {
       title: "症状・疾患別コンテンツで検索流入を伸ばす",
-      detail:
-        "疾患ページとコラムを継続的に増やし、内部リンクで導線を作ることで、指名検索以外の初診流入を育てられます。",
+      detail: seoDetail,
     },
     meoReadiness: {
       title: "MEO（Googleビジネスプロフィール）活用の土台を整える",
@@ -776,20 +883,25 @@ export function generateFindings(scores: Scores, b: DiagnosticsBundle): Finding[
 export function generateChannelComments(b: DiagnosticsBundle): ChannelComment[] {
   const w = b.website;
   const comments: ChannelComment[] = [];
+  const cov = analyzeSpecialtyCoverage(b.input.specialty, b.websiteText);
+  const hasBooking = !!(b.input.bookingUrl || w?.hasBookingLink);
+  const hasLine = !!(b.input.lineUrl || w?.hasLineLink);
+  const symptomHint = cov.profile && cov.missing.length ? `（${quoteList(cov.missing, 3)}など）` : "";
 
   // HP
-  const hpScoreish =
-    (w?.hasTelLink ? 1 : 0) + (w?.hasBookingLink || b.input.bookingUrl ? 1 : 0) + (w?.hasViewport ? 1 : 0);
+  const hpScoreish = (w?.hasTelLink ? 1 : 0) + (hasBooking ? 1 : 0) + (w?.hasViewport ? 1 : 0);
   comments.push({
     channel: "hp",
     channelLabel: "HP（自院サイト）",
     status: w?.status === "failed" ? "unknown" : hpScoreish >= 2 ? "good" : hpScoreish === 1 ? "partial" : "weak",
     comment:
       w?.status === "failed"
-        ? "HPの取得に失敗したため詳細評価はできませんでしたが、予約・電話・スマホ最適化の3点は最低限の集患導線として重要です。"
-        : hpScoreish >= 2
-          ? "予約・電話・スマホ対応など基本的な集患導線が確認できます。初診案内と症状別ページを足すとさらに強くなります。"
-          : "予約導線や電話導線に改善余地があります。ファーストビューに予約・電話CTAを常設することを推奨します。",
+        ? "HPの取得に失敗したため詳細評価はできませんでした。取得できた範囲では、ファーストビューの予約・電話CTA、スマホ最適化の3点が最低限の集患導線として重要です。"
+        : !hasBooking
+          ? `トップページ上部にWeb予約または電話CTAが見当たりません。広告やSNSから流入しても、初診予約までの導線が弱くなっています。${cov.profile ? `あわせて症状別ページ${symptomHint}を増やすと、検索流入の受け皿になります。` : ""}`
+          : hpScoreish >= 2
+            ? `予約・電話・スマホ対応など基本的な集患導線が確認できます。次の一手として、初診案内ページと症状別ページ${symptomHint}を足すと、検索・広告流入の取りこぼしを減らせます。`
+            : "予約・電話・スマホ対応のいずれかが弱い状態です。ファーストビューに予約・電話CTAを常設し、スマホ表示を最優先で最適化してください。",
   });
 
   // Googleマップ/MEO
@@ -798,8 +910,10 @@ export function generateChannelComments(b: DiagnosticsBundle): ChannelComment[] 
     channelLabel: "Googleマップ / MEO",
     status: b.input.googleMapsUrl ? (w?.hasGoogleMapsLink ? "good" : "partial") : "weak",
     comment: b.input.googleMapsUrl
-      ? "GoogleマップURLの入力を確認しました。口コミ数・評価点・写真・カテゴリ設計は外部URLだけでは断定できないため、GBPインサイトの連携が有効です。"
-      : "GoogleビジネスプロフィールのURLが未入力です。近隣からの来院にはMEOが重要なため、整備と掲載を推奨します。",
+      ? w?.hasGoogleMapsLink
+        ? "GoogleマップURLの入力と、HPからの地図リンクを確認しました。口コミ数・評価点・写真・カテゴリ設計は外部URLだけでは断定できないため、実態の把握にはGBPインサイトの連携が有効です。"
+        : "GoogleマップURLは確認できましたが、HP（アクセスページ等）からGoogleマップへのリンクが見当たりません。地図リンクを設置し、GBPの診療時間・住所・電話をHPと一致させてください。"
+      : "GoogleビジネスプロフィールのURLが未入力です。「地域名＋診療科」やマップ検索は来院直前の患者が多いため、GBPの整備とHPへの地図リンク掲載を優先することを推奨します。",
   });
 
   // YouTube
@@ -809,10 +923,12 @@ export function generateChannelComments(b: DiagnosticsBundle): ChannelComment[] 
     channelLabel: "YouTube",
     status: b.input.youtubeUrl ? (yt?.status === "success" ? "good" : "partial") : "unknown",
     comment: b.input.youtubeUrl
-      ? yt?.status === "success"
-        ? `チャンネル「${yt.channelTitle ?? "取得済み"}」を確認しました。動画からHP/予約へ戻す導線があるかを点検すると、視聴を来院に結びつけやすくなります。`
-        : "YouTube URLの入力を確認しました（API詳細取得は未実施/失敗）。動画概要欄に予約URLを掲載し、HPへ戻す導線を作ると効果的です。"
-      : "YouTube URLは未入力です。運用がある場合は、症状解説動画から予約へ戻す導線設計が有効です。",
+      ? !(hasBooking || hasLine)
+        ? "YouTubeアカウントは入力されていますが、HP・予約ページ・LINEへの導線が弱い可能性があります。動画視聴後の行動先（予約・症状ページ）を概要欄と終了画面で明確にしてください。"
+        : yt?.status === "success"
+          ? `チャンネル「${yt.channelTitle ?? "取得済み"}」を確認しました。各動画の概要欄先頭に予約URLを置き、症状解説動画は対応する症状ページ${symptomHint}へリンクすると、視聴を来院に結びつけやすくなります。`
+          : "YouTube URLの入力を確認しました（API詳細取得は未実施/失敗）。動画概要欄の先頭に予約URLを掲載し、HPの症状ページへ戻す導線を作ると効果的です。"
+      : "YouTube URLは未入力です。運用がある場合は、症状解説動画から予約・症状ページへ戻す導線設計が有効です。",
   });
 
   // Instagram
@@ -821,7 +937,7 @@ export function generateChannelComments(b: DiagnosticsBundle): ChannelComment[] 
     channelLabel: "Instagram",
     status: b.input.instagramUrl ? "partial" : "unknown",
     comment: b.input.instagramUrl
-      ? "Instagram URLの入力を確認しました（非公式な内容取得は行いません）。プロフィールに予約リンクを置き、HPの症状ページへ誘導する導線が有効です。"
+      ? "Instagram URLの入力を確認しました（非公式な内容取得は行いません）。プロフィール欄に予約リンクを置き、投稿からHPの症状ページへ誘導する導線を整えると、認知を来院につなげやすくなります。"
       : "Instagram URLは未入力です。地域・診療科によっては認知拡大に有効なため、運用状況に応じて検討してください。",
   });
 
@@ -831,25 +947,23 @@ export function generateChannelComments(b: DiagnosticsBundle): ChannelComment[] 
     channelLabel: "TikTok",
     status: b.input.tiktokUrl ? "partial" : "unknown",
     comment: b.input.tiktokUrl
-      ? "TikTok URLの入力を確認しました（非公式な内容取得は行いません）。プロフィールからHP/予約へ戻す導線があるかを点検してください。"
-      : "TikTok URLは未入力です。若年層向けの診療科では認知獲得に活用余地があります。",
+      ? "TikTok URLの入力を確認しました（非公式な内容取得は行いません）。プロフィールからHP・予約へ戻す導線があるかを点検してください。"
+      : "TikTok URLは未入力です。若年層向けの診療科では認知獲得に活用余地がありますが、優先度は診療科によります。",
   });
 
   // LINE / 予約導線
-  const hasLine = !!b.input.lineUrl || !!w?.hasLineLink;
-  const hasBooking = !!b.input.bookingUrl || !!w?.hasBookingLink;
   comments.push({
     channel: "lineBooking",
     channelLabel: "LINE / 予約導線",
     status: hasLine && hasBooking ? "good" : hasLine || hasBooking ? "partial" : "weak",
     comment:
       hasLine && hasBooking
-        ? "LINEと予約導線の両方が確認できます。友だち追加後のリマインドや再来院導線まで設計すると継続来院につながります。"
+        ? "LINEと予約導線の両方が確認できます。友だち追加後の受診案内・予約リマインド・再来院導線まで設計すると、継続来院につながります。"
         : hasLine
-          ? "LINE導線は確認できました。Web予約への接続を追加すると、初診予約の取りこぼしを減らせます。"
+          ? "LINE導線は確認できましたが、Web予約への接続が弱い状態です。LINEのリッチメニューから予約へ直接つなぐと、初診予約の取りこぼしを減らせます。"
           : hasBooking
-            ? "予約導線は確認できました。LINE公式アカウントを加えると、再来院・キャンセル対策に活用できます。"
-            : "LINE・予約導線ともに確認できませんでした。まずはWeb予約導線の設置を優先することを推奨します。",
+            ? "予約導線は確認できました。LINE公式アカウントを加えると、予約リマインドや再来院・キャンセル対策に活用できます。"
+            : "LINE・予約導線ともに確認できませんでした。まずはWeb予約導線の設置を最優先で行うことを推奨します。",
   });
 
   return comments;

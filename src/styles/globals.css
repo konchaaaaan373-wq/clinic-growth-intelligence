@@ -42,18 +42,33 @@
 
 /* 印刷（ブラウザからPDF保存）向け調整 */
 @media print {
+  @page {
+    margin: 14mm;
+  }
   .no-print {
     display: none !important;
   }
   body {
     background: #ffffff !important;
+    color: #1f2733 !important;
   }
   .card {
     box-shadow: none !important;
     border-color: #e2e8f0 !important;
     break-inside: avoid;
   }
+  /* スコア・提案・リスクなど主要ブロックはページ内で分割しない */
+  .card,
+  li,
+  .badge {
+    break-inside: avoid;
+  }
   .print-full {
     max-width: 100% !important;
+  }
+  /* 印刷時は背景色を薄く保ち、インク節約と可読性を両立 */
+  a {
+    text-decoration: none !important;
+    color: inherit !important;
   }
 }

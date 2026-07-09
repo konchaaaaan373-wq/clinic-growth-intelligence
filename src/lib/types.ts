@@ -49,11 +49,22 @@ export type Finding = {
   detail: string;
 };
 
-/** 改善提案 */
+/** 改善提案（quick win は営業に使えるよう構造化フィールドを持つ） */
 export type Recommendation = {
   id: string;
   title: string;
+  /** 概要（後方互換・成長提案などで使用） */
   detail: string;
+  /** なぜ重要か */
+  whyImportant?: string;
+  /** 具体的に何を直すか */
+  whatToFix?: string;
+  /** 期待される効果（断定はしない） */
+  expectedEffect?: string;
+  /** 難易度 */
+  difficulty?: "低" | "中" | "高";
+  /** 優先度 */
+  priority?: "高" | "中" | "低";
   impact: "high" | "medium" | "low";
   effort: "low" | "medium" | "high";
   relatedScore?: keyof AuditReport["scores"];
@@ -76,9 +87,15 @@ export type ChannelComment = {
 /** 医療広告リスクの所見（断定は禁止・要確認表現のみ） */
 export type RiskFinding = {
   id: string;
+  /** 要確認表現 */
   expression: string;
+  /** 検出箇所の文脈スニペット */
   context: string;
-  note: string;
+  /** 注意理由（なぜ確認が望ましいか） */
+  reason: string;
+  /** 推奨対応 */
+  recommendedAction: string;
+  /** 検出されたページ種別など */
   where?: string;
 };
 
