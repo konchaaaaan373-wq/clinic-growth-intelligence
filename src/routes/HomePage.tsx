@@ -1,8 +1,16 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Hero from "../components/Hero";
 import FeatureCard from "../components/FeatureCard";
 import DisclaimerBox from "../components/DisclaimerBox";
-import { BRAND } from "../lib/utils";
+import LoadingSteps from "../components/LoadingSteps";
+import QuickUrlAuditForm from "../components/QuickUrlAuditForm";
+import type { AuditInput } from "../lib/types";
+import { requestAudit } from "../lib/api";
+import { BRAND, inferClinicNameFromUrl, saveReport } from "../lib/utils";
+
+// 解析が一瞬で終わってもUX上のローディングを最低限見せる
+const MIN_LOADING_MS = 2600;
 
 const icons = {
   hp: (
@@ -54,9 +62,53 @@ const SAMPLE_SCORES = [
 ];
 
 export default function HomePage() {
+  const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleQuickAudit(websiteUrl: string) {
+    setSubmitting(true);
+    setError(null);
+    setDone(false);
+
+    const quickInput: AuditInput = {
+      clinicName: inferClinicNameFromUrl(websiteUrl),
+      websiteUrl,
+      specialty: "未指定",
+      location: "未指定",
+      consent: true,
+      source: "quick-url",
+    };
+
+    const started = Date.now();
+    const result = await requestAudit(quickInput);
+    const elapsed = Date.now() - started;
+    if (elapsed < MIN_LOADING_MS) {
+      await new Promise((r) => setTimeout(r, MIN_LOADING_MS - elapsed));
+    }
+    setDone(true);
+
+    if (result.ok) {
+      saveReport(result.report);
+      setTimeout(() => navigate("/results", { state: { report: result.report } }), 500);
+    } else {
+      setSubmitting(false);
+      setError(result.error);
+    }
+  }
+
+  if (submitting) {
+    return (
+      <div className="container-page py-16">
+        <LoadingSteps done={done} />
+      </div>
+    );
+  }
+
   return (
     <>
-      <Hero />
+      <Hero onQuickAudit={handleQuickAudit} submitting={submitting} error={error} />
 
       {/* できること */}
       <section className="container-page py-16">
@@ -169,16 +221,31 @@ export default function HomePage() {
           「MMM準備診断（施策効果測定のための事前監査）」として提供しており、効果を断定するものではありません。
           患者個人情報は入力しないでください。
         </DisclaimerBox>
-        <div className="mt-8 flex flex-col items-center rounded-xl border border-brand-200 bg-brand-50/50 p-8 text-center">
-          <h2 className="text-2xl font-bold text-ink">
-            まずは無料で、自院の外部集患力を診断
-          </h2>
-          <p className="mt-2 max-w-xl text-sm text-ink-muted">
-            HP URLを入れるだけ。数十秒で、外部から見える改善余地とMMM準備度が分かります。
-          </p>
-          <Link to="/audit" className="btn-primary mt-6 px-8 py-3 text-base">
-            {BRAND.free}を試す
-          </Link>
+        <div className="mt-8 rounded-xl border border-brand-200 bg-brand-50/50 p-6 sm:p-8">
+          <div className="mx-auto max-w-xl text-center">
+            <h2 className="text-2xl font-bold text-ink">
+              まずはHP URLだけで、外部集患力を確認
+            </h2>
+            <p className="mt-2 text-sm text-ink-muted">
+              患者情報は不要。数十秒でレポート化します。詳しい情報は後から追加できます。
+            </p>
+          </div>
+          <div className="mx-auto mt-6 max-w-xl">
+            <QuickUrlAuditForm
+              onSubmit={handleQuickAudit}
+              submitting={submitting}
+              variant="compact"
+              externalError={error}
+            />
+            <div className="mt-3 text-center">
+              <Link
+                to="/audit"
+                className="text-sm font-medium text-brand-700 underline-offset-2 hover:underline"
+              >
+                詳しく入力して診断する →
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
     </>

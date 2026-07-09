@@ -21,6 +21,8 @@ export type AuditInput = {
   monthlyNewPatientsRange?: string;
   interestedInMMM?: boolean;
   consent: boolean;
+  /** 診断の入口。トップページのURLのみ簡易診断 or 詳細フォーム */
+  source?: "quick-url" | "detailed-form";
 };
 
 /** 各スコアカテゴリの詳細 */

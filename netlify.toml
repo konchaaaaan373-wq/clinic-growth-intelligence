@@ -10,13 +10,9 @@
   # Netlify は .ts の Functions を esbuild で自動バンドルします
   node_bundler = "esbuild"
 
-# Functions のパスを先に評価し、SPA fallback より優先させる
-[[redirects]]
-  from = "/.netlify/functions/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
-# SPA fallback（React Router 用）
+# SPA fallback（React Router 用）。
+# /.netlify/functions/* は Netlify の予約パスとして先に処理されるため、
+# この catch-all では捕捉されず、Functions のルーティングは壊れません。
 [[redirects]]
   from = "/*"
   to = "/index.html"

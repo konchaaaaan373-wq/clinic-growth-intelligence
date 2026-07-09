@@ -38,6 +38,21 @@ export function isValidHttpUrl(value: string): boolean {
   }
 }
 
+/**
+ * URL の hostname から医療機関名を推定する（クイック診断でclinicNameが無い場合の補完）。
+ *   https://www.example-clinic.jp → example-clinic.jp
+ *   https://sample-ortho.com/path → sample-ortho.com
+ * 解釈できない場合は元の入力（trim）を返す。
+ */
+export function inferClinicNameFromUrl(websiteUrl: string): string {
+  try {
+    const host = new URL(websiteUrl.trim()).hostname.toLowerCase();
+    return host.replace(/^www\./, "") || websiteUrl.trim();
+  } catch {
+    return websiteUrl.trim();
+  }
+}
+
 /** 入力文字列の軽量サニタイズ（前後空白除去・制御文字除去） */
 export function sanitizeText(value: string): string {
   // eslint-disable-next-line no-control-regex

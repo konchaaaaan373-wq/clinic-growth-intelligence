@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import type { AuditReport } from "../lib/types";
 import { formatDateTime, downloadReportJson, BRAND } from "../lib/utils";
 import ScoreCard from "./ScoreCard";
@@ -78,6 +79,29 @@ export default function ReportView({ report, isSample }: Props) {
         <h3 className="text-base font-bold text-ink">総評（エグゼクティブサマリー）</h3>
         <p className="mt-2 text-sm leading-relaxed text-ink-muted">{summary.executiveSummary}</p>
       </div>
+
+      {/* URLのみで診断した場合の情報追加案内 */}
+      {report.input.source === "quick-url" && (
+        <div className="rounded-xl border border-brand-200 bg-brand-50/60 p-5 no-print">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="max-w-2xl">
+              <div className="text-sm font-bold text-brand-800">
+                このレポートはHP URLのみで作成されています
+              </div>
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">
+                診療科、所在地、Googleマップ、YouTube、Instagram、TikTok、LINE、予約URLを追加すると、
+                SEO・MEO・SNS接続・MMM準備度の評価精度が高まります。
+              </p>
+            </div>
+            <Link
+              to={`/audit?websiteUrl=${encodeURIComponent(report.input.websiteUrl)}`}
+              className="btn-primary whitespace-nowrap"
+            >
+              情報を追加して再診断する
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* 今すぐ直すべき3点（最重要・アクセント付きで目立たせる） */}
       <div className="rounded-xl border-2 border-brand-200 bg-brand-50/40 p-1.5">

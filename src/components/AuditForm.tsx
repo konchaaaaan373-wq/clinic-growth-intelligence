@@ -6,6 +6,7 @@ import DisclaimerBox from "./DisclaimerBox";
 type Props = {
   onSubmit: (input: AuditInput) => void;
   submitting?: boolean;
+  initialValues?: Partial<AuditInput>;
 };
 
 const CHANNEL_OPTIONS = [
@@ -28,21 +29,24 @@ const CONSENT_TEXT =
 
 type Errors = Partial<Record<string, string>>;
 
-export default function AuditForm({ onSubmit, submitting }: Props) {
-  const [clinicName, setClinicName] = useState("");
-  const [websiteUrl, setWebsiteUrl] = useState("");
-  const [specialty, setSpecialty] = useState("");
-  const [location, setLocation] = useState("");
-  const [email, setEmail] = useState("");
-  const [googleMapsUrl, setGoogleMapsUrl] = useState("");
-  const [youtubeUrl, setYoutubeUrl] = useState("");
-  const [instagramUrl, setInstagramUrl] = useState("");
-  const [tiktokUrl, setTiktokUrl] = useState("");
-  const [lineUrl, setLineUrl] = useState("");
-  const [bookingUrl, setBookingUrl] = useState("");
-  const [activeChannels, setActiveChannels] = useState<string[]>([]);
-  const [monthlyNewPatientsRange, setMonthlyNewPatientsRange] = useState("");
-  const [interestedInMMM, setInterestedInMMM] = useState(false);
+export default function AuditForm({ onSubmit, submitting, initialValues }: Props) {
+  const iv = initialValues ?? {};
+  const [clinicName, setClinicName] = useState(iv.clinicName ?? "");
+  const [websiteUrl, setWebsiteUrl] = useState(iv.websiteUrl ?? "");
+  const [specialty, setSpecialty] = useState(iv.specialty ?? "");
+  const [location, setLocation] = useState(iv.location ?? "");
+  const [email, setEmail] = useState(iv.email ?? "");
+  const [googleMapsUrl, setGoogleMapsUrl] = useState(iv.googleMapsUrl ?? "");
+  const [youtubeUrl, setYoutubeUrl] = useState(iv.youtubeUrl ?? "");
+  const [instagramUrl, setInstagramUrl] = useState(iv.instagramUrl ?? "");
+  const [tiktokUrl, setTiktokUrl] = useState(iv.tiktokUrl ?? "");
+  const [lineUrl, setLineUrl] = useState(iv.lineUrl ?? "");
+  const [bookingUrl, setBookingUrl] = useState(iv.bookingUrl ?? "");
+  const [activeChannels, setActiveChannels] = useState<string[]>(iv.activeChannels ?? []);
+  const [monthlyNewPatientsRange, setMonthlyNewPatientsRange] = useState(
+    iv.monthlyNewPatientsRange ?? "",
+  );
+  const [interestedInMMM, setInterestedInMMM] = useState(iv.interestedInMMM ?? false);
   const [consent, setConsent] = useState(false);
 
   const [errors, setErrors] = useState<Errors>({});
@@ -113,6 +117,7 @@ export default function AuditForm({ onSubmit, submitting }: Props) {
       monthlyNewPatientsRange: monthlyNewPatientsRange || undefined,
       interestedInMMM,
       consent,
+      source: "detailed-form",
     };
     onSubmit(input);
   }
