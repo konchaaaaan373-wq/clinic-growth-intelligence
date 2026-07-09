@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import type { AuditReport } from "../lib/types";
-import { loadReport } from "../lib/utils";
+import { loadReport, BRAND } from "../lib/utils";
 import ReportView from "../components/ReportView";
 
 type LocationState = { report?: AuditReport } | null;
@@ -27,11 +27,11 @@ export default function ResultsPage() {
           <h1 className="text-xl font-bold text-ink">診断結果が見つかりません</h1>
           <p className="mt-2 text-sm text-ink-muted">
             まだ診断を実行していないか、結果が保存されていない可能性があります。
-            まずは無料診断を実行してください。
+            まずは {BRAND.free} を実行してください。
           </p>
           <div className="mt-6 flex justify-center gap-3">
             <Link to="/audit" className="btn-primary">
-              無料診断をはじめる
+              {BRAND.free}を試す
             </Link>
             <Link to="/sample" className="btn-secondary">
               サンプルを見る

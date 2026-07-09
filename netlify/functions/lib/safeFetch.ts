@@ -220,7 +220,7 @@ export async function safeFetch(
         signal: controller.signal,
         headers: {
           "User-Agent":
-            "ClinicGrowthIntelligenceBot/1.0 (+external observational audit; respects robots)",
+            "NecoClinicReportBot/1.0 (+external observational audit; respects robots)",
           Accept: "text/html,application/xhtml+xml",
         },
       });

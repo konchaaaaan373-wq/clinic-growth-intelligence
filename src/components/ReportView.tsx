@@ -1,5 +1,5 @@
 import type { AuditReport } from "../lib/types";
-import { formatDateTime, downloadReportJson } from "../lib/utils";
+import { formatDateTime, downloadReportJson, BRAND } from "../lib/utils";
 import ScoreCard from "./ScoreCard";
 import ScoreBreakdown from "./ScoreBreakdown";
 import FindingList from "./FindingList";
@@ -21,10 +21,26 @@ export default function ReportView({ report, isSample }: Props) {
 
   return (
     <div className="space-y-6 print-full">
-      {/* ヘッダー行 */}
+      {/* 印刷（PDF）時のみ表示するブランドヘッダー */}
+      <div className="hidden print:block border-b border-slate-200 pb-3">
+        <div className="text-xs font-semibold tracking-wide text-brand-700">{BRAND.product}</div>
+        <div className="text-lg font-bold text-ink">
+          {BRAND.free} 診断レポート
+          {isSample && "（サンプル）"}
+        </div>
+        <div className="mt-0.5 text-xs text-ink-soft">
+          {report.input.clinicName}（{report.input.specialty}・{report.input.location}）／ 作成日時:{" "}
+          {formatDateTime(report.createdAt)}
+        </div>
+      </div>
+
+      {/* ヘッダー行（画面表示用） */}
       <div className="flex flex-wrap items-center justify-between gap-3 no-print">
         <div>
-          <h1 className="text-2xl font-bold text-ink">診断結果</h1>
+          <p className="text-xs font-semibold tracking-wide text-brand-700">
+            {BRAND.product}・{BRAND.free}
+          </p>
+          <h1 className="text-2xl font-bold text-ink">診断レポート</h1>
           <p className="text-sm text-ink-soft">
             {report.input.clinicName}（{report.input.specialty}・{report.input.location}）／
             作成日時: {formatDateTime(report.createdAt)}

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import Hero from "../components/Hero";
 import FeatureCard from "../components/FeatureCard";
 import DisclaimerBox from "../components/DisclaimerBox";
+import { BRAND } from "../lib/utils";
 
 const icons = {
   hp: (
@@ -44,12 +45,12 @@ const icons = {
 };
 
 const SAMPLE_SCORES = [
-  { label: "HP集患導線", score: 14, max: 25 },
+  { label: "HP集患導線", score: 15, max: 25 },
   { label: "SEO/医療コンテンツ", score: 15, max: 25 },
-  { label: "MEO準備度", score: 9, max: 15 },
-  { label: "SNS集患接続", score: 8, max: 15 },
+  { label: "MEO準備度", score: 10, max: 15 },
+  { label: "SNS集患接続", score: 7, max: 15 },
   { label: "医療広告リスク", score: 8, max: 10 },
-  { label: "MMM準備度", score: 8, max: 10 },
+  { label: "MMM準備度", score: 9, max: 10 },
 ];
 
 export default function HomePage() {
@@ -80,13 +81,15 @@ export default function HomePage() {
       <section className="border-y border-slate-200 bg-white py-16">
         <div className="container-page grid gap-8 lg:grid-cols-2">
           <div className="card p-6">
-            <span className="badge border-brand-200 bg-brand-50 text-brand-700">無料版でわかること</span>
+            <span className="badge border-brand-200 bg-brand-50 text-brand-700">
+              {BRAND.free}でわかること
+            </span>
             <ul className="mt-4 space-y-3 text-sm text-ink-muted">
               {[
                 "URLを入れるだけで、外部から見える集患上の弱点がわかる",
-                "HP・MEO・SNS・医療広告リスクを横断して診断できる",
+                "HP・MEO・SNS・医療広告上の要確認表現を横断して診断できる",
                 "「実際に初診数に効いたか」を測るために、どのデータが足りないかがわかる",
-                "有料版MMM（初診寄与の推定）への準備度が分かる",
+                `${BRAND.mmm}（初診寄与の推定）への準備度が分かる`,
               ].map((t) => (
                 <li key={t} className="flex gap-2">
                   <span className="text-brand-600">●</span>
@@ -96,12 +99,14 @@ export default function HomePage() {
             </ul>
           </div>
           <div className="card p-6">
-            <span className="badge border-slate-200 bg-slate-50 text-ink-muted">有料版でできること（将来構想）</span>
+            <span className="badge border-slate-200 bg-slate-50 text-ink-muted">
+              {BRAND.analytics}でできること（将来構想）
+            </span>
             <ul className="mt-4 space-y-3 text-sm text-ink-muted">
               {[
                 "日別初診数を目的変数にする",
                 "HP記事・広告・YouTube・SNS・ポスティング・MEO・休診日・曜日・祝日・天気などを説明変数にする",
-                "どの施策が初診数にどれだけ寄与したかを推定する",
+                `${BRAND.mmm}で、どの施策が初診数にどれだけ寄与したかを推定する`,
                 "施策別の推定CPA、来月の施策提案、予算配分提案を出す",
               ].map((t) => (
                 <li key={t} className="flex gap-2">
@@ -127,7 +132,7 @@ export default function HomePage() {
         </div>
         <div className="mt-8 grid gap-6 lg:grid-cols-3">
           <div className="card flex flex-col items-center justify-center p-8 lg:col-span-1">
-            <div className="text-5xl font-bold text-brand-700">62</div>
+            <div className="text-5xl font-bold text-brand-700">64</div>
             <div className="mt-1 text-sm text-ink-soft">/ 100 ・ ランク B</div>
             <Link to="/sample" className="btn-secondary mt-5">
               サンプル結果を見る
@@ -165,12 +170,14 @@ export default function HomePage() {
           患者個人情報は入力しないでください。
         </DisclaimerBox>
         <div className="mt-8 flex flex-col items-center rounded-xl border border-brand-200 bg-brand-50/50 p-8 text-center">
-          <h2 className="text-2xl font-bold text-ink">まずは無料で、自院の集患力を診断</h2>
+          <h2 className="text-2xl font-bold text-ink">
+            まずは無料で、自院の外部集患力を診断
+          </h2>
           <p className="mt-2 max-w-xl text-sm text-ink-muted">
             HP URLを入れるだけ。数十秒で、外部から見える改善余地とMMM準備度が分かります。
           </p>
           <Link to="/audit" className="btn-primary mt-6 px-8 py-3 text-base">
-            無料診断をはじめる
+            {BRAND.free}を試す
           </Link>
         </div>
       </section>

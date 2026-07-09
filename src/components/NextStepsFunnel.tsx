@@ -1,23 +1,25 @@
+import { BRAND } from "../lib/utils";
+
 const STEPS = [
   {
     stage: "STEP 1",
-    title: "無料診断",
+    title: BRAND.free,
     state: "現在地",
-    body: "外部から見える集患導線・SEO・SNS・医療広告リスクを診断します。",
+    body: "外部URLから見える集患導線・SEO・SNS接続・MEO準備度・医療広告上の要確認表現を診断します。",
     tone: "current" as const,
   },
   {
     stage: "STEP 2",
     title: "MMM準備",
     state: "次の一手",
-    body: "日別初診数、広告費、投稿履歴、休診日を整理し、効果測定の土台を作ります。",
+    body: "日別初診数、広告費、コラム公開日、SNS投稿、休診日を整理し、効果測定の土台を作ります。",
     tone: "next" as const,
   },
   {
     stage: "STEP 3",
-    title: "有料MMM",
+    title: BRAND.analytics,
     state: "ゴール",
-    body: "HP記事・広告・SNS・ポスティングが初診数にどれだけ寄与したかを推定します。",
+    body: `${BRAND.mmm} で、HP記事・広告・SNS・ポスティングが初診数にどれだけ寄与したかを推定します。`,
     tone: "goal" as const,
   },
 ];
