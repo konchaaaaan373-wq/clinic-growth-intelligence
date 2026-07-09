@@ -176,6 +176,7 @@ function validateInput(raw: unknown): ValidationResult {
     monthlyNewPatientsRange: optionalString(r.monthlyNewPatientsRange, 20),
     interestedInMMM: r.interestedInMMM === true,
     consent: true,
+    source: r.source === "quick-url" || r.source === "detailed-form" ? r.source : undefined,
   };
 
   return { ok: true, input };

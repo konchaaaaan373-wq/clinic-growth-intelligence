@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import AuditForm from "../components/AuditForm";
 import LoadingSteps from "../components/LoadingSteps";
 import DisclaimerBox from "../components/DisclaimerBox";
@@ -12,6 +12,8 @@ const MIN_LOADING_MS = 2600;
 
 export default function AuditPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const prefillUrl = searchParams.get("websiteUrl") ?? undefined;
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,11 +53,16 @@ export default function AuditPage() {
     <div className="container-page py-12">
       <div className="mx-auto max-w-3xl">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-ink">{BRAND.free}（無料診断）</h1>
+          <h1 className="text-2xl font-bold text-ink">{BRAND.free}（詳しく診断する）</h1>
           <p className="mt-2 text-sm text-ink-muted">
-            医療機関名とHP URLを入力すると、外部から見える集患力を診断します。
-            任意項目を埋めるほど、診断と {BRAND.mmm} 準備度の精度が高まります。
+            より詳しく診断するために、医療機関名・診療科・所在地・SNS URLなどを入力してください。
+            HP URLだけでも診断できますが、情報を追加するほどレポートの精度が高まります。
           </p>
+          {prefillUrl && (
+            <p className="mt-2 text-xs text-brand-700">
+              トップページで入力されたHP URLを反映しました。診療科・所在地などを追加すると精度が高まります。
+            </p>
+          )}
         </div>
 
         {error && (
@@ -66,7 +73,11 @@ export default function AuditPage() {
           </div>
         )}
 
-        <AuditForm onSubmit={handleSubmit} submitting={submitting} />
+        <AuditForm
+          onSubmit={handleSubmit}
+          submitting={submitting}
+          initialValues={prefillUrl ? { websiteUrl: prefillUrl } : undefined}
+        />
       </div>
     </div>
   );
