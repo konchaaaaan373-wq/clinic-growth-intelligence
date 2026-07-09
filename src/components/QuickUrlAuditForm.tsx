@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { isValidHttpUrl } from "../lib/utils";
+import { isValidHttpUrl, normalizeUrlInput } from "../lib/utils";
 
 type QuickUrlAuditFormProps = {
   onSubmit: (websiteUrl: string) => void;
@@ -9,7 +9,8 @@ type QuickUrlAuditFormProps = {
   externalError?: string | null;
 };
 
-const URL_ERROR = "http:// または https:// で始まる有効なURLを入力してください。";
+const URL_ERROR =
+  "https://example-clinic.jp の形式で入力してください。https:// は自動補完できます。";
 
 export default function QuickUrlAuditForm({
   onSubmit,
@@ -22,13 +23,16 @@ export default function QuickUrlAuditForm({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const value = url.trim();
-    if (!isValidHttpUrl(value)) {
+    // 前後スペースを除去し、http(s):// が無ければ https:// を自動補完
+    const normalized = normalizeUrlInput(url);
+    if (!isValidHttpUrl(normalized)) {
       setError(URL_ERROR);
       return;
     }
     setError(null);
-    onSubmit(value);
+    // 補完後の値を入力欄にも反映してから送信
+    if (normalized !== url) setUrl(normalized);
+    onSubmit(normalized);
   }
 
   const shownError = error ?? externalError ?? null;
