@@ -1,8 +1,19 @@
-# Clinic Growth Intelligence
+# Neco Clinic Report
+
+> リポジトリ名 `clinic-growth-intelligence` は **内部名** です。外向きのプロダクト名は **Neco Clinic Report** です。
 
 医療機関向けの **無料 集患力診断 SaaS（MVP）** です。
 クリニックが自院の HP URL・GoogleマップURL・YouTube・Instagram・TikTok などを入力すると、
 **外部から観測できる範囲で** 「集患力」「HP導線」「SEO/コンテンツ」「MEO準備度」「SNS接続」「医療広告リスク」「MMM準備度」を自動診断し、改善提案を返します。
+
+## ブランド体系
+
+| 名称 | 位置づけ |
+| --- | --- |
+| **Neco Clinic Report** | プロダクト全体 |
+| **Clinic Report Free** | URLベースの無料診断（本MVPで提供） |
+| **Clinic Report Analytics** | 実データ連携による有料分析（将来提供） |
+| **Clinic Report MMM** | 初診数に対する施策寄与推定機能（Clinic Report Analytics の中核） |
 
 > **重要な前提**
 > 外部URLだけでは、真のマーケティング効果・実際の初診CPA・新患数への寄与・広告費対効果・直接来院を含めた実成果は算出できません。
@@ -59,15 +70,15 @@
 代わりに「外部から見える集患ボトルネック」と「MMMを始めるための準備度」を可視化し、
 **次に何を計測すべきか** を明確にします。これが無料版のコアバリューです。
 
-### 有料版MMMでは何を実現するのか
+### Clinic Report Analytics（有料版）では何を実現するのか
 
-有料版では、上記の実データを連携し、クリニック版 **MMM（マーケティング・ミックス・モデリング）** を行います。
+**Clinic Report Analytics** では、上記の実データを連携し、**Clinic Report MMM**（クリニック版 MMM = マーケティング・ミックス・モデリング）を行います。
 
 - 日別初診数を **目的変数**、HP記事・Google広告・YouTube・SNS・ポスティング・MEO・休診日・曜日・祝日・天気などを **説明変数** としてモデル化
 - **どの施策が初診数にどれだけ寄与したか** を推定
 - 施策別の **推定CPA**、来月の施策提案、予算配分提案を提示
 
-無料版の診断結果は、この有料版MMMに進むための **オンボーディング**（準備度チェックと不足データの棚卸し）として機能します。
+Clinic Report Free の診断結果は、この Clinic Report Analytics に進むための **オンボーディング**（準備度チェックと不足データの棚卸し）として機能します。
 
 ### Neco / 医療機関支援への応用余地
 
@@ -292,7 +303,7 @@ npm run lint       # ESLint
 
 ## 今後のロードマップ
 
-1. **有料版 MMM の実装**: 日別初診数を目的変数とした時系列モデル、施策別寄与・推定CPA・予算配分提案
+1. **Clinic Report Analytics / Clinic Report MMM の実装**: 日別初診数を目的変数とした時系列モデル、施策別寄与・推定CPA・予算配分提案
 2. **データ連携**: GA4 / Search Console / Google 広告 / YouTube Analytics / Google ビジネスプロフィール
 3. **永続化と認証**: レポート保存用 DB、医療機関アカウント、履歴比較
 4. **診断ロジックの高度化**: LLM による所見要約・改善提案、疾患別ページ構造のより精緻な検出

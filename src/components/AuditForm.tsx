@@ -287,7 +287,7 @@ export default function AuditForm({ onSubmit, submitting }: Props) {
                 checked={interestedInMMM}
                 onChange={(e) => setInterestedInMMM(e.target.checked)}
               />
-              有料版MMM（初診寄与の推定）に興味がある
+              Clinic Report Analytics（有料版・初診寄与の推定）に興味がある
             </label>
           </div>
         </div>
@@ -312,7 +312,7 @@ export default function AuditForm({ onSubmit, submitting }: Props) {
 
       <div className="flex flex-col items-center gap-3">
         <button type="submit" className="btn-primary w-full px-6 py-3 text-base sm:w-auto" disabled={submitting}>
-          {submitting ? "診断中…" : "この内容で無料診断する"}
+          {submitting ? "診断中…" : "この内容で Clinic Report Free を試す"}
         </button>
         <p className="text-xs text-ink-soft">
           送信後、外部情報の解析を行い診断結果を表示します（数十秒かかる場合があります）。

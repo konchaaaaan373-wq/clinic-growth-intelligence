@@ -5,7 +5,7 @@ import LoadingSteps from "../components/LoadingSteps";
 import DisclaimerBox from "../components/DisclaimerBox";
 import type { AuditInput } from "../lib/types";
 import { requestAudit } from "../lib/api";
-import { saveReport } from "../lib/utils";
+import { saveReport, BRAND } from "../lib/utils";
 
 // 解析が一瞬で終わってもUX上のローディングを最低限見せる
 const MIN_LOADING_MS = 2600;
@@ -51,10 +51,10 @@ export default function AuditPage() {
     <div className="container-page py-12">
       <div className="mx-auto max-w-3xl">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-ink">無料診断</h1>
+          <h1 className="text-2xl font-bold text-ink">{BRAND.free}（無料診断）</h1>
           <p className="mt-2 text-sm text-ink-muted">
             医療機関名とHP URLを入力すると、外部から見える集患力を診断します。
-            任意項目を埋めるほど、診断とMMM準備度の精度が高まります。
+            任意項目を埋めるほど、診断と {BRAND.mmm} 準備度の精度が高まります。
           </p>
         </div>
 

@@ -1,5 +1,5 @@
 import { Link, NavLink } from "react-router-dom";
-import { APP_NAME } from "../lib/utils";
+import { APP_NAME, BRAND } from "../lib/utils";
 
 const navItems = [
   { to: "/", label: "ホーム", end: true },
@@ -27,7 +27,7 @@ export default function Header() {
           <span className="flex flex-col leading-tight">
             <span className="text-sm font-bold text-ink">{APP_NAME}</span>
             <span className="hidden text-[11px] text-ink-soft sm:block">
-              クリニック集患力 無料診断
+              クリニックの外部集患力を無料診断
             </span>
           </span>
         </Link>
@@ -50,7 +50,7 @@ export default function Header() {
             </NavLink>
           ))}
           <Link to="/audit" className="btn-primary ml-2 hidden sm:inline-flex">
-            無料診断をはじめる
+            {BRAND.free}を試す
           </Link>
         </nav>
       </div>

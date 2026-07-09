@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import DisclaimerBox from "../components/DisclaimerBox";
 import { MMM_REQUIRED_DATA } from "../lib/scoring";
+import { BRAND } from "../lib/utils";
 
 export default function AboutMMMPage() {
   return (
@@ -8,13 +9,13 @@ export default function AboutMMMPage() {
       <div className="mx-auto max-w-3xl">
         <span className="badge border-brand-200 bg-brand-50 text-brand-700">解説</span>
         <h1 className="mt-3 text-3xl font-bold text-ink">
-          MMM（マーケティング・ミックス・モデリング）とは
+          {BRAND.mmm}｜MMM（マーケティング・ミックス・モデリング）とは
         </h1>
         <p className="mt-4 text-base leading-relaxed text-ink-muted">
-          MMMとは、<strong className="text-ink">日別初診数などの成果</strong>に対して、広告、SEO記事、
-          YouTube、SNS、ポスティング、曜日、休診日、天気などが
+          {BRAND.mmm} は、<strong className="text-ink">日別初診数などの成果</strong>に対して、広告、SEO記事、
+          YouTube、Instagram、TikTok、ポスティング、曜日、休診日、天気などが
           <strong className="text-ink">どれくらい関係しているか</strong>を、
-          時系列データから推定する方法です。
+          時系列データから推定する、{BRAND.analytics} の中核機能です。
         </p>
 
         <div className="mt-6 card p-6">
@@ -39,9 +40,9 @@ export default function AboutMMMPage() {
         </div>
 
         <div className="mt-6 card p-6">
-          <h2 className="text-lg font-bold text-ink">無料診断（本サービス）との関係</h2>
+          <h2 className="text-lg font-bold text-ink">{BRAND.free}（無料診断）との関係</h2>
           <p className="mt-2 text-sm leading-relaxed text-ink-muted">
-            本サービスの無料診断は、MMMを始める前の
+            {BRAND.free} は、{BRAND.mmm} を始める前の
             <strong className="text-ink">「準備度チェック」</strong>です。
             外部から見える集患導線を評価しつつ、MMMに必要なデータのうち何が足りていないかを可視化します。
             実際に施策別の初診寄与を推定するには、以下のようなデータの蓄積が必要になります。
@@ -65,7 +66,7 @@ export default function AboutMMMPage() {
 
         <div className="mt-8 flex flex-wrap gap-3">
           <Link to="/audit" className="btn-primary">
-            無料診断で準備度をチェック
+            {BRAND.free}を試す
           </Link>
           <Link to="/sample" className="btn-secondary">
             サンプル結果を見る

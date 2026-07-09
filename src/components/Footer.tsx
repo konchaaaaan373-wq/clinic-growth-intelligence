@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { APP_NAME } from "../lib/utils";
+import { APP_NAME, BRAND } from "../lib/utils";
 
 export default function Footer() {
   return (
@@ -9,7 +9,7 @@ export default function Footer() {
           <div>
             <div className="text-sm font-bold text-ink">{APP_NAME}</div>
             <p className="mt-2 max-w-xs text-sm text-ink-muted">
-              医療機関向けに、HP・MEO・SNS・医療広告リスクを外部情報から無料診断し、
+              {BRAND.free} は、HP・SNS・MEO・医療広告上の要確認表現を外部情報から無料診断し、
               初診数MMMへの準備度を可視化します。
             </p>
           </div>
@@ -20,7 +20,7 @@ export default function Footer() {
             <ul className="mt-3 space-y-2 text-sm text-ink-muted">
               <li>
                 <Link to="/audit" className="hover:text-brand-700">
-                  無料診断をはじめる
+                  {BRAND.free}を試す
                 </Link>
               </li>
               <li>

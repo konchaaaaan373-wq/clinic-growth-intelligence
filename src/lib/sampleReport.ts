@@ -134,7 +134,7 @@ export const SAMPLE_REPORT: AuditReport = {
         "SNS（YouTube）があります",
         "現在注力している施策が入力されています",
         "月間初診数レンジが入力されています（目的変数の目安）",
-        "有料版MMMに関心をお持ちです",
+        "Clinic Report Analytics（有料版）に関心をお持ちです",
         "コラム/ブログがあり、コンテンツ施策日を説明変数化しやすい状態です",
         "複数チャネルを運用しており、寄与分解の意義が大きい状態です",
       ],
@@ -338,7 +338,7 @@ export const SAMPLE_REPORT: AuditReport = {
       "広告費・投稿日を月次でまとめる",
     ],
     paidPlanMessage:
-      "有料版では、日別初診数を目的変数、HP記事・広告・YouTube・SNS・ポスティング・MEO・休診日・曜日・祝日・天気などを説明変数として、施策別の初診寄与とおおよそのCPAを推定します。無料版では実データが揃っていないため、これらは算出せず「準備度」の評価にとどめています。",
+      "Clinic Report Analytics（有料版）では、日別初診数を目的変数、HP記事・広告・YouTube・SNS・ポスティング・MEO・休診日・曜日・祝日・天気などを説明変数として、Clinic Report MMM が施策別の初診寄与とおおよそのCPAを推定します。Clinic Report Free（無料版）では実データが揃っていないため、これらは算出せず「準備度」の評価にとどめています。",
   },
   rawDiagnostics: {
     website: {

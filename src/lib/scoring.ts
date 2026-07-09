@@ -528,7 +528,7 @@ export function calculateMMMReadinessScore(b: DiagnosticsBundle): ScoreDetail {
   }
   if (b.input.interestedInMMM) {
     score += 1;
-    positives.push("有料版MMMに関心をお持ちです");
+    positives.push("Clinic Report Analytics（有料版）に関心をお持ちです");
   }
   if (b.input.bookingUrl || b.website?.hasBookingLink) {
     score += 1;
@@ -762,7 +762,7 @@ export function generateQuickWins(scores: Scores, b: DiagnosticsBundle): Recomme
       whatToFix:
         "スプレッドシートで構いません。日付・初診数・休診日を毎日記録し、あわせて広告費・投稿日も月次でまとめ始めてください。",
       expectedEffect:
-        "数か月分たまると、HP記事・広告・SNS・ポスティングが初診数にどれだけ寄与したかを推定できる状態（有料版MMM）に近づきます。",
+        "数か月分たまると、HP記事・広告・SNS・ポスティングが初診数にどれだけ寄与したかを推定できる状態（Clinic Report Analytics の Clinic Report MMM）に近づきます。",
       difficulty: "低",
       priority: "中",
       impact: "high",
@@ -1029,7 +1029,7 @@ export function buildMMMReadiness(b: DiagnosticsBundle, mmmScore: ScoreDetail): 
   ];
 
   const paidPlanMessage =
-    "有料版では、日別初診数を目的変数、HP記事・広告・YouTube・SNS・ポスティング・MEO・休診日・曜日・祝日・天気などを説明変数として、施策別の初診寄与とおおよそのCPAを推定します。無料版では実データが揃っていないため、これらは算出せず「準備度」の評価にとどめています。";
+    "Clinic Report Analytics（有料版）では、日別初診数を目的変数、HP記事・広告・YouTube・SNS・ポスティング・MEO・休診日・曜日・祝日・天気などを説明変数として、Clinic Report MMM が施策別の初診寄与とおおよそのCPAを推定します。Clinic Report Free（無料版）では実データが揃っていないため、これらは算出せず「準備度」の評価にとどめています。";
 
   return {
     readinessScore: mmmScore.score,

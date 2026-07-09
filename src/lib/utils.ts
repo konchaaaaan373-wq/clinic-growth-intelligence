@@ -4,8 +4,23 @@
 
 import type { AuditReport } from "./types";
 
+// =========================================================
+// ブランド体系（外向きプロダクト名）
+//   Neco Clinic Report        … プロダクト全体
+//   Clinic Report Free        … URLベースの無料診断
+//   Clinic Report Analytics   … 実データ連携による有料分析
+//   Clinic Report MMM         … 初診数への施策寄与推定機能
+// （GitHub リポジトリ名 clinic-growth-intelligence は内部名として維持）
+// =========================================================
+export const BRAND = {
+  product: "Neco Clinic Report",
+  free: "Clinic Report Free",
+  analytics: "Clinic Report Analytics",
+  mmm: "Clinic Report MMM",
+} as const;
+
 export const APP_NAME =
-  (import.meta.env.VITE_APP_NAME as string | undefined) ?? "Clinic Growth Intelligence";
+  (import.meta.env.VITE_APP_NAME as string | undefined) ?? BRAND.product;
 
 export const CONTACT_EMAIL =
   (import.meta.env.VITE_CONTACT_EMAIL as string | undefined) ?? "example@example.com";
