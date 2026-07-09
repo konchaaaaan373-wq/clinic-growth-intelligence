@@ -1,7 +1,11 @@
 // =========================================================
-// サンプル診断レポート
-// APIキーや実URLがなくても /sample で表示できる架空データ。
-// スコア内訳の合計は 62/100（14+15+9+8+8+8）。
+// サンプル診断レポート（営業資料としてそのまま提示できる品質）
+//
+// 架空の「サンプル整形外科クリニック」。
+// 想定: HPあり／予約導線が弱い／症状別ページが少ない／
+//       YouTubeはあるが予約につながっていない／GoogleマップURLあり／
+//       LINE導線なし／医療広告リスクとして「最新」「痛くない」が要確認。
+// スコア内訳合計 = 64/100（15+15+10+7+8+9）。「悪すぎないが改善余地が明確」。
 // =========================================================
 
 import type { AuditReport } from "./types";
@@ -27,16 +31,16 @@ export const SAMPLE_REPORT: AuditReport = {
     consent: true,
   },
   summary: {
-    overallScore: 62,
+    overallScore: 64,
     grade: "B",
     oneLineDiagnosis:
-      "基本的な情報発信はできていますが、予約導線・症状別ページ・SNS接続に改善余地があります。",
+      "基本的な情報発信はできていますが、予約導線・症状別ページ・YouTubeからの予約接続に改善余地があります。",
     executiveSummary:
-      "基本的な情報発信はできていますが、予約導線、症状別ページ、SNSからHPへの接続に改善余地があります。MMMを行うには、日別初診数と施策履歴の整備が次の一手です。特に「SNS集患接続」（8/15）に伸びしろがあります。なお本診断は外部から観測できる情報に基づく準備度評価であり、実際の初診CPAや初診寄与を断定するものではありません。",
+      "情報発信の土台はありますが、初診の受け皿となる「予約導線」と「症状別ページ」が弱く、流入を来院に変えきれていない状態です。特に、YouTubeを運用しているにもかかわらず予約・HPへの導線がなく、視聴が来院に結びついていません。MMMを行うには、日別初診数と施策履歴の整備が次の一手です。特に「SNS集患接続」（7/15）に伸びしろがあります。なお本診断は外部から観測できる情報に基づく準備度評価であり、実際の初診CPAや初診寄与を断定するものではありません。",
   },
   scores: {
     websiteConversion: {
-      score: 14,
+      score: 15,
       maxScore: 25,
       label: "HP集患導線",
       explanation:
@@ -58,22 +62,22 @@ export const SAMPLE_REPORT: AuditReport = {
       maxScore: 25,
       label: "SEO/医療コンテンツ",
       explanation:
-        "検索から見つけられ、疾患・症状で悩む患者に届くコンテンツ設計になっているかを評価します。",
+        "検索から見つけられ、疾患・症状で悩む患者に届くコンテンツ設計になっているかを、診療科（整形外科）に応じて評価します。",
       positives: [
         "title タグが設定されています",
         "meta description が設定されています",
         "h1 見出しが設定されています",
-        "診療内容に関する記載は一部確認できます",
-        "ブログ/コラム/お知らせなどの継続的な情報発信が見られます",
+        "症状ページは一部確認できます（「腰痛」「肩こり」など）",
+        "院長コラムなど継続的な情報発信が見られます",
       ],
       negatives: [
-        "疾患別・症状別ページの拡充余地があります",
-        "症状・疾患名を起点とした内部リンク導線が弱い可能性があります",
+        "整形外科では「膝痛」「しびれ」「骨粗鬆症」など症状別ページが不足している可能性があります。地域名×症状の検索からの初診獲得では、診療科トップページだけでは弱くなりがちです",
+        "症状・疾患名を起点とした内部リンク（例: 症状ページ→医師紹介→予約）の導線が弱い可能性があります",
         "構造化データ（JSON-LD）が確認できませんでした",
       ],
     },
     meoReadiness: {
-      score: 9,
+      score: 10,
       maxScore: 15,
       label: "MEO準備度",
       explanation:
@@ -85,24 +89,24 @@ export const SAMPLE_REPORT: AuditReport = {
         "診療時間の記載があります",
       ],
       negatives: [
-        "アクセス・駐車場情報が読み取りにくい可能性があります",
         "HP内からGoogleマップへのリンクが確認できませんでした",
+        "アクセス・駐車場情報が読み取りにくい可能性があります",
       ],
     },
     snsConnection: {
-      score: 8,
+      score: 7,
       maxScore: 15,
       label: "SNS集患接続",
       explanation:
         "SNSが存在し、HPや予約導線と相互に接続されているかを評価します。Instagram/TikTok は非公式取得を行いません。",
       positives: [
         "YouTube チャンネルURLが入力されています",
-        "HP内からSNSへのリンクが確認できます",
+        "HP内からSNS（YouTube）へのリンクが確認できます",
       ],
       negatives: [
         "Instagram URLが未入力です",
         "TikTok URLが未入力です",
-        "SNSからHP/予約へ戻す導線の整備余地があります（予約導線が未確認）",
+        "YouTubeからHP・予約へ戻す導線の整備余地があります（予約導線が未確認）",
       ],
     },
     medicalAdRisk: {
@@ -119,7 +123,7 @@ export const SAMPLE_REPORT: AuditReport = {
       ],
     },
     mmmReadiness: {
-      score: 8,
+      score: 9,
       maxScore: 10,
       label: "MMM準備度",
       explanation:
@@ -146,18 +150,18 @@ export const SAMPLE_REPORT: AuditReport = {
       detail: "Web予約への導線が確認できませんでした",
     },
     {
+      id: "f-snsConnection",
+      category: "sns",
+      severity: "high",
+      title: "SNS集患接続: 改善余地",
+      detail: "YouTubeからHP・予約へ戻す導線の整備余地があります",
+    },
+    {
       id: "f-seoContent",
       category: "seo",
       severity: "medium",
       title: "SEO/医療コンテンツ: 改善余地",
-      detail: "疾患別・症状別ページの拡充余地があります",
-    },
-    {
-      id: "f-snsConnection",
-      category: "sns",
-      severity: "medium",
-      title: "SNS集患接続: 改善余地",
-      detail: "SNSからHP/予約へ戻す導線の整備余地があります",
+      detail: "「膝痛」「しびれ」「骨粗鬆症」など症状別ページが不足している可能性があります",
     },
     {
       id: "f-meoReadiness",
@@ -169,28 +173,49 @@ export const SAMPLE_REPORT: AuditReport = {
   ],
   quickWins: [
     {
-      id: "qw-booking",
-      title: "Web予約への導線を主要ページに追加する",
-      detail:
-        "Web予約ボタンをヘッダーやファーストビューに常設し、初診と再診で導線を分けると離脱を防げます。",
+      id: "qw-booking-firstview",
+      title: "スマホのファーストビューに予約導線を固定する",
+      detail: "広告・SNS・検索から流入しても予約導線が見つからないと離脱につながります。",
+      whyImportant:
+        "広告・SNS・検索から流入しても、ファーストビューに予約ボタンが見当たらないと、初診予約まで進む前に離脱しやすくなります。",
+      whatToFix:
+        "スマホ表示の最上部に「Web予約」「電話する」「LINE相談」のいずれかを常時表示（固定ヘッダー等）してください。初診と再診でボタンを分けると、初診の迷いを減らせます。",
+      expectedEffect:
+        "流入から予約完了までの離脱を減らせる可能性があります。ただし実際の効果測定には、日別初診数と流入データの連携が必要です。",
+      difficulty: "低",
+      priority: "高",
       impact: "high",
-      effort: "medium",
+      effort: "low",
       relatedScore: "websiteConversion",
     },
     {
       id: "qw-symptom",
-      title: "代表的な症状・疾患ごとのページを整備する",
-      detail:
-        "腰痛・肩こり・スポーツ外傷など症状別ページを作り、内部リンクでつなぐと検索からの初診流入を増やせます。",
+      title: "整形外科の症状別ページ（「膝痛」「しびれ」「骨粗鬆症」など）を追加する",
+      detail: "症状ごとの解説ページを作り、内部リンクで予約へつなぎます。",
+      whyImportant:
+        "「地域名 × 症状」で検索する初診患者は、診療科トップページよりも症状別ページに着地しやすく、症状ページが無いと検索からの初診流入を取りこぼします。",
+      whatToFix:
+        "「膝痛」「しびれ」「骨粗鬆症」など、貴院で対応可能な症状ごとに解説ページを作成し、各ページから医師紹介・予約へ内部リンクを張ってください。",
+      expectedEffect:
+        "指名検索以外（症状検索）からの初診流入を増やしやすくなります。実際の寄与度の測定には、Search Console と日別初診数の連携が必要です。",
+      difficulty: "高",
+      priority: "高",
       impact: "high",
       effort: "high",
       relatedScore: "seoContent",
     },
     {
-      id: "qw-sns-return",
-      title: "YouTube/SNSからHP・予約へ戻す導線を設ける",
-      detail:
-        "動画概要欄やプロフィールに予約URLを掲載し、視聴・閲覧を来院に結びつけます。",
+      id: "qw-youtube-return",
+      title: "YouTube視聴者をHP・予約へ戻す導線を作る",
+      detail: "動画の概要欄・終了画面から予約ページへ誘導します。",
+      whyImportant:
+        "YouTubeアカウントは入力されていますが、HP・予約ページ・LINEへの導線が弱いと、視聴が来院に結びつきません。視聴後の行動先が不明確なままになっています。",
+      whatToFix:
+        "各動画の概要欄の先頭に予約URLを掲載し、終了画面・固定コメントからも予約ページへ誘導してください。症状解説動画は、その症状ページへリンクすると効果的です。",
+      expectedEffect:
+        "動画視聴からの来院につながりやすくなります。効果測定にはYouTube Analyticsと予約計測の連携が必要です。",
+      difficulty: "低",
+      priority: "中",
       impact: "medium",
       effort: "low",
       relatedScore: "snsConnection",
@@ -201,51 +226,51 @@ export const SAMPLE_REPORT: AuditReport = {
       id: "growth-0",
       title: "SNSとHP/予約の相互接続を強化する",
       detail:
-        "SNSからHPの症状ページ・予約へ戻す導線を作り、認知を来院に結びつけます。",
+        "YouTube・SNSからHPの症状ページ・予約へ戻す導線を作り、認知を来院に結びつけます。",
       impact: "high",
       effort: "medium",
       relatedScore: "snsConnection",
     },
     {
       id: "growth-1",
-      title: "MEO（Googleビジネスプロフィール）活用の土台を整える",
+      title: "症状・疾患別コンテンツで検索流入を伸ばす",
       detail:
-        "住所・電話・診療時間・写真・カテゴリ設計を整え、HPと情報を一致させることで近隣来院を伸ばせます。",
+        "整形外科で検索されやすい「膝痛」「しびれ」「骨粗鬆症」などの症状ページとコラムを継続的に増やし、内部リンクで予約へつなぐことで、指名検索以外の初診流入を育てられます。",
       impact: "high",
       effort: "medium",
-      relatedScore: "meoReadiness",
+      relatedScore: "seoContent",
     },
     {
       id: "growth-2",
-      title: "HP集患導線を強化して初診の取りこぼしを減らす",
+      title: "MEO（Googleビジネスプロフィール）活用の土台を整える",
       detail:
-        "予約・電話・LINEのCTA、初診案内、診療時間・アクセスの明確化により、来院への転換率を高められます。",
+        "住所・電話・診療時間・写真・カテゴリ設計を整え、HPと情報を一致させ、HPから地図リンクを張ることで近隣来院を伸ばせます。",
       impact: "high",
       effort: "medium",
-      relatedScore: "websiteConversion",
+      relatedScore: "meoReadiness",
     },
   ],
   channelComments: [
     {
       channel: "hp",
       channelLabel: "HP（自院サイト）",
-      status: "partial",
+      status: "weak",
       comment:
-        "電話・スマホ対応は確認できますが、Web予約導線が弱い状態です。ファーストビューに予約CTAを常設し、初診案内ページを追加すると来院転換が高まります。",
+        "トップページ上部にWeb予約または電話CTAが見当たりません。広告やSNSから流入しても、初診予約までの導線が弱くなっています。あわせて症状別ページ（「膝痛」「しびれ」「骨粗鬆症」など）を増やすと、検索流入の受け皿になります。",
     },
     {
       channel: "googleMap",
       channelLabel: "Googleマップ / MEO",
       status: "partial",
       comment:
-        "GoogleマップURLは確認できました。口コミ数・評価点・写真・カテゴリ設計は外部URLだけでは断定できないため、GBPインサイトの連携が有効です。HPからの地図リンク追加も推奨します。",
+        "GoogleマップURLは確認できましたが、HP（アクセスページ等）からGoogleマップへのリンクが見当たりません。地図リンクを設置し、GBPの診療時間・住所・電話をHPと一致させてください。口コミ数・評価点・写真の実態把握にはGBPインサイトの連携が有効です。",
     },
     {
       channel: "youtube",
       channelLabel: "YouTube",
       status: "partial",
       comment:
-        "YouTube運用が確認できます。ただし動画から予約・HPへ戻す導線が弱く、視聴が来院に結びつきにくい状態です。概要欄への予約URL掲載と、症状解説→予約の設計を推奨します。",
+        "YouTubeアカウントは入力されていますが、HP・予約ページ・LINEへの導線が弱い可能性があります。動画視聴後の行動先（予約・症状ページ）を概要欄と終了画面で明確にしてください。",
     },
     {
       channel: "instagram",
@@ -265,27 +290,33 @@ export const SAMPLE_REPORT: AuditReport = {
       channelLabel: "LINE / 予約導線",
       status: "weak",
       comment:
-        "LINE・予約導線ともに確認できませんでした。まずはWeb予約導線の設置を優先し、次にLINE公式で再来院・リマインドを設計することを推奨します。",
+        "LINE・予約導線ともに確認できませんでした。まずはWeb予約導線の設置を最優先で行い、次にLINE公式で予約リマインド・再来院を設計することを推奨します。",
     },
   ],
   medicalAdRiskFindings: [
     {
-      id: "risk-1",
+      id: "risk-最新",
       expression: "最新",
       context: "…最新の治療機器を導入し…",
-      note: "「最新」は文脈により、他院との比較優位を示唆する表現とみなされる可能性があります。事実に基づく客観的記載か確認をおすすめします（法的判断ではありません）。",
+      reason:
+        "医療広告では、比較優良・誇大に見える表現は文脈によって注意が必要です。「最新」は他院との比較優位を示唆する表現とみなされる場合があります。",
+      recommendedAction:
+        "客観的根拠の明示、導入時期・機器名などの具体的説明、または別表現への変更を検討してください。",
       where: "トップページ",
     },
     {
-      id: "risk-2",
+      id: "risk-痛くない",
       expression: "痛くない",
       context: "…痛くない治療を心がけています…",
-      note: "「痛くない」は効果・体感の保証と受け取られる可能性があります。表現の文脈によっては注意が必要です。最終確認は医療広告ガイドラインや専門家確認を前提にしてください。",
+      reason:
+        "「痛くない」は効果・体感の保証と受け取られる可能性があります。個人差のある事項を断定する表現は文脈により注意が必要です。",
+      recommendedAction:
+        "「痛みに配慮した」「麻酔を用いる」など、個人差がある旨を含む表現への変更を検討してください。",
       where: "診療案内ページ",
     },
   ],
   mmmReadiness: {
-    readinessScore: 8,
+    readinessScore: 9,
     availableSignals: [
       "HP URL",
       "GoogleマップURL",
@@ -320,7 +351,7 @@ export const SAMPLE_REPORT: AuditReport = {
       finalUrl: "https://example-seikei.example.com/",
       title: "サンプル整形外科クリニック｜世田谷区の整形外科・リハビリ",
       metaDescription:
-        "世田谷区の整形外科。腰痛・肩こり・スポーツ外傷のリハビリに対応。診療時間・アクセスはこちら。",
+        "世田谷区の整形外科。腰痛・肩こりのリハビリに対応。診療時間・アクセスはこちら。",
       h1: ["サンプル整形外科クリニック"],
       h2: ["診療案内", "アクセス", "院長コラム"],
       hasViewport: true,
@@ -329,7 +360,7 @@ export const SAMPLE_REPORT: AuditReport = {
       hasLineLink: false,
       hasJsonLd: false,
       hasSitemapHint: true,
-      internalLinkCount: 12,
+      internalLinkCount: 11,
       externalLinks: ["https://www.youtube.com/@sample-seikei"],
       snsLinks: {
         youtube: true,
@@ -340,8 +371,8 @@ export const SAMPLE_REPORT: AuditReport = {
         x: false,
       },
       hasGoogleMapsLink: false,
-      detectedKeywords: ["診療時間", "アクセス", "コラム", "リハビリ", "痛み", "整形外科"],
-      ctaKeywordPages: 2,
+      detectedKeywords: ["診療時間", "アクセス", "コラム", "リハビリ", "腰痛", "整形外科"],
+      ctaKeywordPages: 1,
       pageCount: 3,
     },
     pagespeed: {

@@ -105,7 +105,7 @@ export default async function handler(req: Request): Promise<Response> {
       scores,
       findings: generateFindings(scores, bundle),
       quickWins: generateQuickWins(scores, bundle),
-      growthOpportunities: generateGrowthOpportunities(scores),
+      growthOpportunities: generateGrowthOpportunities(scores, bundle),
       channelComments: generateChannelComments(bundle),
       medicalAdRiskFindings: website.riskFindings,
       mmmReadiness: buildMMMReadinessPanel(bundle, scores.mmmReadiness),

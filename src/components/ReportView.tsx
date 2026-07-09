@@ -8,6 +8,7 @@ import ChannelCommentCard from "./ChannelCommentCard";
 import RiskFindingCard from "./RiskFindingCard";
 import MMMReadinessPanel from "./MMMReadinessPanel";
 import PaidPlanCTA from "./PaidPlanCTA";
+import NextStepsFunnel from "./NextStepsFunnel";
 import DisclaimerBox from "./DisclaimerBox";
 
 type Props = {
@@ -62,24 +63,27 @@ export default function ReportView({ report, isSample }: Props) {
         <p className="mt-2 text-sm leading-relaxed text-ink-muted">{summary.executiveSummary}</p>
       </div>
 
-      <ScoreBreakdown scores={scores} />
-
-      <div className="grid gap-6 lg:grid-cols-2">
+      {/* 今すぐ直すべき3点（最重要・アクセント付きで目立たせる） */}
+      <div className="rounded-xl border-2 border-brand-200 bg-brand-50/40 p-1.5">
         <RecommendationList
           title="今すぐ直すべき3点"
-          subtitle="効果が大きく着手しやすい改善から着手しましょう。"
+          subtitle="効果が大きく着手しやすい改善から着手しましょう。各項目に「なぜ重要か／何を直すか／期待される効果」を記載しています。"
           items={report.quickWins}
           numbered
         />
+      </div>
+
+      <ScoreBreakdown scores={scores} />
+
+      <div className="grid gap-6 lg:grid-cols-2">
         <RecommendationList
           title="伸ばせる余地が大きい3点"
           subtitle="現状スコアが低く、改善インパクトが大きい領域です。"
           items={report.growthOpportunities}
           numbered
         />
+        <FindingList title="主な所見" findings={report.findings} />
       </div>
-
-      <FindingList title="主な所見" findings={report.findings} />
 
       <div>
         <h3 className="mb-3 text-base font-bold text-ink">チャネル別コメント</h3>
@@ -93,6 +97,8 @@ export default function ReportView({ report, isSample }: Props) {
       <RiskFindingCard findings={report.medicalAdRiskFindings} />
 
       <MMMReadinessPanel readiness={report.mmmReadiness} />
+
+      <NextStepsFunnel />
 
       <div className="no-print">
         <PaidPlanCTA clinicName={report.input.clinicName} />
