@@ -627,6 +627,125 @@ export function gradeFromScore(score: number): "A" | "B" | "C" | "D" {
 }
 
 // =========================================================
+// HP取得失敗（評価不能）用のレポート組み立て
+//   - サイト内部評価（HP/SEO/MEO/医療広告リスク）は「評価不能」にする
+//   - 総合スコア/ランクは出さない（null）
+//   - Quick Win はサイト内部を見ていない前提の内容に差し替える
+// =========================================================
+
+const FETCH_FAILED_NEGATIVE =
+  "対象サイトを取得できなかったため、この項目は評価できませんでした（サイト品質が低いという意味ではありません）。";
+
+function notEvaluableDetail(label: string, maxScore: number, explanation: string): ScoreDetail {
+  return {
+    score: 0,
+    maxScore,
+    label,
+    explanation,
+    positives: [],
+    negatives: [FETCH_FAILED_NEGATIVE],
+    status: "not_evaluable",
+  };
+}
+
+/** 取得失敗時のスコア群。HP由来項目は評価不能、入力由来のSNS/MMMのみ参考評価。 */
+export function buildFetchFailedScores(bundle: DiagnosticsBundle): Scores {
+  return {
+    websiteConversion: notEvaluableDetail(
+      "HP集患導線",
+      25,
+      "HPを取得できなかったため、予約・電話・診療時間・アクセスなどの導線は評価できません。",
+    ),
+    seoContent: notEvaluableDetail(
+      "SEO/医療コンテンツ",
+      25,
+      "HPを取得できなかったため、title・見出し・症状別ページなどは評価できません。",
+    ),
+    meoReadiness: notEvaluableDetail(
+      "MEO準備度",
+      15,
+      "HP本文を取得できなかったため、住所・電話・地図リンクなどは評価できません。",
+    ),
+    snsConnection: calculateSnsConnectionScore(bundle),
+    medicalAdRisk: notEvaluableDetail(
+      "医療広告リスク",
+      10,
+      "サイト本文を取得できなかったため、要確認表現の有無は評価できません。",
+    ),
+    mmmReadiness: calculateMMMReadinessScore(bundle),
+  };
+}
+
+export const FETCH_FAILED_ONE_LINE =
+  "対象サイトの取得に失敗したため、HP導線・SEO・MEOの評価はできませんでした。URLをご確認のうえ再診断してください。";
+
+export const FETCH_FAILED_SUMMARY =
+  "対象サイトの取得に失敗したため、HP導線・SEO・MEOの詳細評価はできませんでした。URLの入力誤り、一時的な通信障害、外部アクセス制限（Botブロック等）の可能性があります。URLを確認して再診断するか、詳細フォームから情報を追加してください。なお、これは対象サイトの品質を評価した結果ではありません。";
+
+/** 取得失敗時の Quick Win（サイト内部を見ていない前提の内容） */
+export function generateFetchFailedQuickWins(): Recommendation[] {
+  return [
+    {
+      id: "ff-recheck-url",
+      title: "URLを確認して再診断する",
+      detail: "入力したHP URLが正しいか確認し、もう一度診断してください。",
+      whyImportant:
+        "URLの綴り誤り・ドメイン変更・一時的な障害があると、サイトを取得できず評価できません。",
+      whatToFix:
+        "ブラウザで実際に開けるURL（https:// から始まる正しいアドレス）か確認し、再診断してください。",
+      expectedEffect: "サイトを取得できれば、HP導線・SEO・MEOの評価が可能になります。",
+      difficulty: "低",
+      priority: "高",
+      impact: "high",
+      effort: "low",
+    },
+    {
+      id: "ff-detailed-form",
+      title: "詳細フォームから診療科・所在地・GoogleマップURLを追加する",
+      detail: "URLのみに頼らず、入力情報から評価できる範囲を広げます。",
+      whyImportant:
+        "診療科・所在地・GoogleマップURL・SNSを入力すると、サイト取得に依存しないSNS接続・MEO準備度・MMM準備度の評価が具体化します。",
+      whatToFix:
+        "詳細フォーム（/audit）から、診療科・都道府県/市区町村・GoogleマップURL・各SNS URLを追加して再診断してください。",
+      expectedEffect: "サイトが取得できない状況でも、入力情報に基づく評価の精度が高まります。",
+      difficulty: "低",
+      priority: "高",
+      impact: "high",
+      effort: "low",
+    },
+    {
+      id: "ff-bot-block",
+      title: "サイトがBot/外部アクセスをブロックしていないか確認する",
+      detail: "WAFやアクセス制限で外部からの取得が拒否されている可能性があります。",
+      whyImportant:
+        "セキュリティ設定（WAF・国外IP遮断・User-Agent制限など）により、外部からのHTML取得がブロックされると評価できません。",
+      whatToFix:
+        "サーバー/CDN/WAFの設定で、一般的なクローラーからのアクセスが過度に制限されていないかを保守担当・制作会社に確認してください。",
+      expectedEffect: "外部からの取得が可能になれば、次回以降の診断でHP評価ができるようになります。",
+      difficulty: "中",
+      priority: "中",
+      impact: "medium",
+      effort: "medium",
+    },
+  ];
+}
+
+/** 取得失敗時の findings（1件・取得失敗の明示） */
+export function generateFetchFailedFindings(website?: WebsiteDiagnostics): Finding[] {
+  return [
+    {
+      id: "f-fetch-failed",
+      category: "general",
+      severity: "high",
+      title: "対象サイトを取得できませんでした（評価不能）",
+      detail:
+        (website?.errorMessage ? `取得時のメッセージ: ${website.errorMessage}。 ` : "") +
+        "この結果はサイト品質の評価ではありません。URLの確認・再診断、または詳細フォームからの情報追加をご検討ください。",
+    },
+  ];
+}
+
+// =========================================================
 // 文章生成
 // =========================================================
 /** 良好=達成率>=0.8、改善余地=達成率<0.6。医療広告リスクは別枠のため除外して評価。 */

@@ -37,6 +37,7 @@ export const SAMPLE_REPORT: AuditReport = {
       "基本的な情報発信はできています。一方で「SNS集患接続」に改善余地があります。",
     executiveSummary:
       "「MMM準備度」は外部から見る限り良好です。一方で、「SNS集患接続」には改善余地があります。特に、YouTubeは運用されていますが、HP・予約への戻し導線が弱く、視聴が来院に結びつきにくい状態です。HP集患導線とSEO/医療コンテンツは基礎はできており、症状別ページの拡充が次の伸びしろです。なお本診断は外部から観測できる情報に基づく準備度評価であり、実際の初診CPAや初診寄与を断定するものではありません。",
+    siteFetchFailed: false,
   },
   scores: {
     websiteConversion: {
