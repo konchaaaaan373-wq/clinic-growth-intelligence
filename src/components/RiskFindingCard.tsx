@@ -11,6 +11,10 @@ const severityMeta: Record<RiskFinding["severity"], { label: string; cls: string
 };
 
 export default function RiskFindingCard({ findings }: Props) {
+  // 優先確認・要確認は詳細カードで示し、低リスク（減点なし）は控えめな一覧にとどめる
+  const primary = findings.filter((f) => f.severity !== "low");
+  const lows = findings.filter((f) => f.severity === "low");
+
   return (
     <div className="card p-6">
       <div className="flex items-center gap-2">
@@ -20,17 +24,27 @@ export default function RiskFindingCard({ findings }: Props) {
         以下は機械的に抽出した「要確認の可能性がある表現」を、文脈に応じて
         <span className="font-medium text-ink-muted">優先確認 / 要確認 / 低リスク・文脈確認</span>
         に分類したものです。違反の断定ではなく、法的判断でもありません。
-        「低リスク・文脈確認」は受診促進・患者状態の記述など、問題になりにくい文脈を含みます。
+        「低リスク・文脈確認」は受診促進・副作用やリスクの説明など、問題になりにくい文脈で、
+        スコアの減点対象にもしていません。
         最終確認は医療広告ガイドラインや専門家確認を前提にしてください。
       </p>
 
-      {findings.length === 0 ? (
+      {findings.length === 0 && (
         <p className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
           初期スクリーニングでは、注意が必要な表現は検出されませんでした（保証ではありません）。
         </p>
-      ) : (
+      )}
+
+      {findings.length > 0 && primary.length === 0 && (
+        <p className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+          高リスク・要確認にあたる表現は検出されませんでした。以下は低リスクの文脈確認のみで、
+          スコアの減点はありません。
+        </p>
+      )}
+
+      {primary.length > 0 && (
         <ul className="mt-4 space-y-3">
-          {findings.map((f) => (
+          {primary.map((f) => (
             <li key={f.id} className="rounded-lg border border-slate-200 bg-slate-50/70 p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <span className={`badge ${severityMeta[f.severity].cls}`}>
@@ -59,6 +73,26 @@ export default function RiskFindingCard({ findings }: Props) {
             </li>
           ))}
         </ul>
+      )}
+
+      {lows.length > 0 && (
+        <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50/60 p-4">
+          <div className="text-xs font-semibold text-ink-soft">
+            低リスク・文脈確認（減点なし）{lows.length} 件
+          </div>
+          <p className="mt-1 text-xs leading-relaxed text-ink-soft">
+            受診促進・副作用やリスクの説明・患者状態の記述など、問題になりにくい文脈での検出です。
+            参考として検出箇所のみ記載します。
+          </p>
+          <ul className="mt-2 space-y-1.5">
+            {lows.map((f) => (
+              <li key={f.id} className="text-xs leading-relaxed text-ink-muted">
+                「{f.expression}」{f.where && `（${f.where}）`}
+                {f.context && <>：「… {f.context} …」</>}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );

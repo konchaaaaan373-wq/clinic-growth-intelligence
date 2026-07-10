@@ -43,7 +43,7 @@
 /* 印刷（ブラウザからPDF保存）向け調整 */
 @media print {
   @page {
-    margin: 14mm;
+    margin: 12mm;
   }
   .no-print {
     display: none !important;
@@ -63,8 +63,37 @@
   .badge {
     break-inside: avoid;
   }
+  /* 見出し直後の改ページを避ける（見出しだけがページ末尾に残らないように） */
+  h2,
+  h3,
+  h4 {
+    break-after: avoid;
+  }
   .print-full {
     max-width: 100% !important;
+  }
+  /* 1ページより高いカード（スコア内訳など）は、カード単位ではなく内部の行単位で分割を避ける。
+     カード全体を avoid にすると、直前に大きな空白ページが生まれてしまう */
+  .print-allow-break {
+    break-inside: auto !important;
+  }
+  /* 「詳細レポート」以降は改ページして、1ページ目を結論ページとして独立させる */
+  .print-break-before {
+    break-before: page;
+    border-top: none !important;
+    padding-top: 0 !important;
+  }
+  /* 印刷時は余白を少し詰めて、余白だけのページ・過剰なページ数を抑える */
+  .container-page {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .py-10 {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  .print-full > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.85rem !important;
   }
   /* 印刷時は背景色を薄く保ち、インク節約と可読性を両立 */
   a {

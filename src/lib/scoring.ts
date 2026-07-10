@@ -107,6 +107,18 @@ function clamp(n: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, n));
 }
 
+/**
+ * URLのみ（または診療科・所在地が未指定の）暫定診断かどうか。
+ * レポート表示・Quick Wins の順序・チャネル別コメントの文言で共通に使う。
+ */
+export function isUrlOnlyAudit(input: AuditInput): boolean {
+  return (
+    input.source === "quick-url" ||
+    input.specialty === "未指定" ||
+    input.location === "未指定"
+  );
+}
+
 function textIncludesAny(text: string | undefined, keywords: string[]): boolean {
   if (!text) return false;
   const lower = text.toLowerCase();
@@ -484,18 +496,32 @@ export function calculateMedicalAdRiskScore(riskFindings: RiskFinding[]): ScoreD
   const score = clamp(10 - deduction, 0, 10);
 
   const total = counts.high + counts.medium + counts.low;
+  const hasDeduction = counts.high > 0 || counts.medium > 0;
   if (total === 0) {
     positives.push("初期スクリーニングでは、注意が必要な表現は検出されませんでした");
-  } else {
-    if (counts.high > 0) {
-      negatives.push(`優先確認 ${counts.high} 件・要確認 ${counts.medium} 件・文脈確認 ${counts.low} 件（違反の断定ではありません）`);
-    } else {
-      negatives.push(`要確認 ${counts.medium} 件・文脈確認 ${counts.low} 件（違反の断定ではありません）`);
-    }
-    const label = (s: RiskFinding["severity"]) =>
-      s === "high" ? "優先確認" : s === "medium" ? "要確認" : "文脈確認";
+  } else if (!hasDeduction) {
+    // low のみ: 受診促進・副作用説明など問題になりにくい文脈のため減点しない
+    positives.push(
+      `高リスク・要確認にあたる表現は検出されませんでした（低リスクの文脈確認 ${counts.low} 件のみ・減点なし）`,
+    );
     for (const f of riskFindings) {
-      negatives.push(`【${label(f.severity)}】「${f.expression}」— 文脈により確認が望ましい可能性があります`);
+      negatives.push(
+        `【文脈確認】「${f.expression}」— 受診促進・副作用説明などの文脈のため減点していません（低リスク）`,
+      );
+    }
+  } else {
+    const countParts: string[] = [];
+    if (counts.high > 0) countParts.push(`優先確認 ${counts.high} 件`);
+    if (counts.medium > 0) countParts.push(`要確認 ${counts.medium} 件`);
+    if (counts.low > 0) countParts.push(`文脈確認 ${counts.low} 件（低リスク・減点なし）`);
+    negatives.push(`${countParts.join("・")}（違反の断定ではありません）`);
+    const label = (s: RiskFinding["severity"]) => (s === "high" ? "優先確認" : "要確認");
+    for (const f of riskFindings) {
+      negatives.push(
+        f.severity === "low"
+          ? `【文脈確認】「${f.expression}」— 低リスクの文脈のため減点していません`
+          : `【${label(f.severity)}】「${f.expression}」— 文脈により確認が望ましい可能性があります`,
+      );
     }
     if (counts.high === 0) {
       positives.push("保証・最上級を断定するような高リスク表現は検出されませんでした");
@@ -839,49 +865,65 @@ export function generateQuickWins(scores: Scores, b: DiagnosticsBundle): Recomme
     });
   }
 
-  // 優先度（高>中>低）→ 難易度（低>中>高）で並べる
+  // URLのみ診断では、最初の一手は「情報を追加して再診断」
+  const isQuickUrl = isUrlOnlyAudit(b.input);
+  if (isQuickUrl) {
+    recs.push(addInfoQuickWin());
+  }
+
+  // 3件に満たない場合は fallback 候補で補完（同じ領域の提案は重複させない）
+  if (recs.length < 3) {
+    for (const fb of fallbackQuickWins(scores)) {
+      if (recs.length >= 3) break;
+      const duplicated = recs.some(
+        (r) => r.id === fb.id || (!!fb.relatedScore && r.relatedScore === fb.relatedScore),
+      );
+      if (duplicated) continue;
+      recs.push(fb);
+    }
+  }
+
+  // fallback 合流後に、優先度（高>中>低）→ 難易度（低>中>高）→ 効果（大>中>小）で並べる。
+  // URLのみ診断では「情報追加 → MEO整備 → 日別初診数の記録」の順が自然なため補正する
+  // （日別初診数の記録は有料MMM準備寄りで、無料診断直後の最初の行動としては後段）。
   const prScore = (r: Recommendation) => (r.priority === "高" ? 0 : r.priority === "中" ? 1 : 2);
   const dfScore = (r: Recommendation) =>
     r.difficulty === "低" ? 0 : r.difficulty === "中" ? 0.3 : 0.6;
-  const sorted = recs.sort((a, c) => prScore(a) - prScore(c) + (dfScore(a) - dfScore(c)));
-
-  // 3件に満たない場合は fallback で必ず3件にする
-  const result = sorted.slice(0, 3);
-  if (result.length < 3) {
-    for (const fb of fallbackQuickWins(scores, b)) {
-      if (result.length >= 3) break;
-      if (result.some((r) => r.id === fb.id)) continue;
-      result.push(fb);
-    }
-  }
-  return result.slice(0, 3);
+  const impScore = (r: Recommendation) =>
+    r.impact === "high" ? 0 : r.impact === "medium" ? 0.1 : 0.2;
+  const quickUrlBias = (r: Recommendation) => {
+    if (!isQuickUrl) return 0;
+    if (r.id === "qw-add-info") return -10; // 必ず先頭
+    if (r.relatedScore === "meoReadiness") return -0.5;
+    if (r.relatedScore === "mmmReadiness") return 0.5;
+    return 0;
+  };
+  const rank = (r: Recommendation) => prScore(r) + dfScore(r) + impScore(r) + quickUrlBias(r);
+  return recs.sort((a, c) => rank(a) - rank(c)).slice(0, 3);
 }
 
-/** quickWins が3件に満たない場合の補完候補（スコアの低い領域・URLのみ診断を優先） */
-function fallbackQuickWins(scores: Scores, b: DiagnosticsBundle): Recommendation[] {
-  const fbs: Recommendation[] = [];
-  const isQuickUrl =
-    b.input.source === "quick-url" ||
-    b.input.specialty === "未指定" ||
-    b.input.location === "未指定";
+/** URLのみ診断の Quick Win #1: 情報を追加して再診断（暫定評価を実態に近づける最初の一手） */
+function addInfoQuickWin(): Recommendation {
+  return {
+    id: "qw-add-info",
+    title: "診療科・所在地・GoogleマップURLを追加して再診断する",
+    detail: "URLのみの暫定評価を、実態に近い診断に引き上げます。",
+    whyImportant:
+      "現在は診療科・所在地・SNSなどが未入力のため、SEO・MEO・SNS接続・症状ページ評価は外部から見える範囲での暫定評価にとどまっています。",
+    whatToFix:
+      "診療科・都道府県/市区町村・GoogleマップURL・各SNS URLを追加して再診断してください。診療科を指定すると症状別ページの評価が具体化します。",
+    expectedEffect:
+      "評価の精度が高まり、診療科に応じた症状別ページの過不足まで具体的に把握できます。",
+    difficulty: "低",
+    priority: "高",
+    impact: "high",
+    effort: "low",
+  };
+}
 
-  if (isQuickUrl) {
-    fbs.push({
-      id: "fb-add-info",
-      title: "診療科・所在地・GoogleマップURLを追加して再診断する",
-      detail: "URLのみの暫定評価を、実態に近い診断に引き上げます。",
-      whyImportant:
-        "現在は診療科・所在地・SNSなどが未入力のため、SEO・MEO・SNS接続・症状ページ評価は外部から見える範囲での暫定評価にとどまっています。",
-      whatToFix:
-        "診療科・都道府県/市区町村・GoogleマップURL・各SNS URLを追加して再診断してください。診療科を指定すると症状別ページの評価が具体化します。",
-      expectedEffect:
-        "評価の精度が高まり、診療科に応じた症状別ページの過不足まで具体的に把握できます。",
-      difficulty: "低",
-      priority: "高",
-      impact: "high",
-      effort: "low",
-    });
-  }
+/** quickWins が3件に満たない場合の補完候補（スコアの低い領域を優先） */
+function fallbackQuickWins(scores: Scores): Recommendation[] {
+  const fbs: Recommendation[] = [];
   fbs.push(
     {
       id: "fb-meo",
@@ -933,8 +975,7 @@ function fallbackQuickWins(scores: Scores, b: DiagnosticsBundle): Recommendation
 
   // スコアの低い領域に対応する fallback を優先的に前へ
   const ratio = (k: keyof Scores) => scores[k].score / scores[k].maxScore;
-  const relatedRatio = (r: Recommendation) =>
-    r.relatedScore ? ratio(r.relatedScore) : -1; // relatedScore 無し（情報追加）は最優先
+  const relatedRatio = (r: Recommendation) => (r.relatedScore ? ratio(r.relatedScore) : 1);
   return fbs.sort((a, c) => relatedRatio(a) - relatedRatio(c));
 }
 
@@ -1040,28 +1081,69 @@ export function generateFindings(scores: Scores, b: DiagnosticsBundle): Finding[
 // =========================================================
 // チャネル別コメント
 // =========================================================
-export function generateChannelComments(b: DiagnosticsBundle): ChannelComment[] {
+export function generateChannelComments(b: DiagnosticsBundle, scores: Scores): ChannelComment[] {
   const w = b.website;
   const comments: ChannelComment[] = [];
   const cov = analyzeSpecialtyCoverage(b.input.specialty, b.websiteText);
   const hasBooking = !!(b.input.bookingUrl || w?.hasBookingLink);
   const hasLine = !!(b.input.lineUrl || w?.hasLineLink);
-  const symptomHint = cov.profile && cov.missing.length ? `（${quoteList(cov.missing, 3)}など）` : "";
 
-  // HP
+  const wcRatio = scores.websiteConversion.score / scores.websiteConversion.maxScore;
+  const seoRatio = scores.seoContent.score / scores.seoContent.maxScore;
+  // 症状別ページの「追加」提案は、SEO/医療コンテンツに実際に改善余地がある場合のみ出す
+  // （高スコアの領域に「不足」「足す」と言うと、スコア内訳と矛盾するため）
+  const seoHasRoom = seoRatio < 0.8;
+  const symptomHint =
+    seoHasRoom && cov.profile && cov.missing.length ? `（${quoteList(cov.missing, 3)}など）` : "";
+  const externalLimit = isUrlOnlyAudit(b.input) ? "URLのみ診断では" : "外部からの診断では";
+
+  // HP: スコアと検出内容に応じて動的に組み立てる
   const hpScoreish = (w?.hasTelLink ? 1 : 0) + (hasBooking ? 1 : 0) + (w?.hasViewport ? 1 : 0);
+  const hasFirstVisitInfo = textIncludesAny(b.websiteText, FIRST_VISIT_KEYWORDS);
+  const confirmedCtas = [
+    ...(hasBooking ? ["予約"] : []),
+    ...(w?.hasTelLink ? ["電話"] : []),
+    ...(hasLine ? ["LINE"] : []),
+  ];
+  const ctaLabel = confirmedCtas.length ? confirmedCtas.join("・") : "行動";
+
+  let hpComment: string;
+  if (w?.status === "failed") {
+    hpComment =
+      "HPの取得に失敗したため詳細評価はできませんでした。取得できた範囲では、ファーストビューの予約・電話CTA、スマホ最適化の3点が最低限の集患導線として重要です。";
+  } else if (wcRatio >= 0.8 && !seoHasRoom) {
+    // 導線・コンテンツともに高スコア: 不足指摘ではなく次段階（実データ連携）の提案にする
+    hpComment = `HP上では${ctaLabel}などの基本導線が確認でき、症状・疾患ページや継続的な情報発信の土台も良好です。${externalLimit}実際の予約完了率や検索流入までは分からないため、次の段階では流入数・予約数・初診数を連携して導線の実効性を確認してください。`;
+  } else if (wcRatio >= 0.8) {
+    // 導線は良好・コンテンツ側に伸びしろ
+    hpComment = `HP上では${ctaLabel}などの基本導線が確認できます。伸びしろはコンテンツ側にあり、症状別ページ${symptomHint}の拡充が次の一手です。導線自体の実効性は、流入数・予約数・初診数の連携で確認できます。`;
+  } else if (!hasBooking) {
+    hpComment = `トップページ上部にWeb予約または電話CTAが見当たりません。広告やSNSから流入しても、初診予約までの導線が弱くなっています。${seoHasRoom && cov.profile ? `あわせて症状別ページ${symptomHint}を増やすと、検索流入の受け皿になります。` : ""}`;
+  } else if (hpScoreish >= 2) {
+    // 基本導線はあるが満点ではない: 実際に検出できなかった項目だけを提案する
+    const gaps: string[] = [];
+    if (!hasFirstVisitInfo) gaps.push("初診案内ページ");
+    if (seoHasRoom) gaps.push(`症状別ページ${symptomHint}`);
+    hpComment = gaps.length
+      ? `予約・電話・スマホ対応など基本的な集患導線が確認できます。次の一手として、${gaps.join("と")}を整えると、検索・広告流入の取りこぼしを減らせます。`
+      : `予約・電話・スマホ対応など基本的な集患導線が確認できます。${externalLimit}実際の予約完了率までは分からないため、次の段階では流入数・予約数・初診数を連携した効果測定を推奨します。`;
+  } else {
+    hpComment =
+      "予約・電話・スマホ対応のいずれかが弱い状態です。ファーストビューに予約・電話CTAを常設し、スマホ表示を最優先で最適化してください。";
+  }
+
   comments.push({
     channel: "hp",
     channelLabel: "HP（自院サイト）",
-    status: w?.status === "failed" ? "unknown" : hpScoreish >= 2 ? "good" : hpScoreish === 1 ? "partial" : "weak",
-    comment:
+    status:
       w?.status === "failed"
-        ? "HPの取得に失敗したため詳細評価はできませんでした。取得できた範囲では、ファーストビューの予約・電話CTA、スマホ最適化の3点が最低限の集患導線として重要です。"
-        : !hasBooking
-          ? `トップページ上部にWeb予約または電話CTAが見当たりません。広告やSNSから流入しても、初診予約までの導線が弱くなっています。${cov.profile ? `あわせて症状別ページ${symptomHint}を増やすと、検索流入の受け皿になります。` : ""}`
-          : hpScoreish >= 2
-            ? `予約・電話・スマホ対応など基本的な集患導線が確認できます。次の一手として、初診案内ページと症状別ページ${symptomHint}を足すと、検索・広告流入の取りこぼしを減らせます。`
-            : "予約・電話・スマホ対応のいずれかが弱い状態です。ファーストビューに予約・電話CTAを常設し、スマホ表示を最優先で最適化してください。",
+        ? "unknown"
+        : wcRatio >= 0.8 || hpScoreish >= 2
+          ? "good"
+          : hpScoreish === 1
+            ? "partial"
+            : "weak",
+    comment: hpComment,
   });
 
   // Googleマップ/MEO

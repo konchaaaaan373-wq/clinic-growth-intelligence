@@ -27,11 +27,14 @@ export default function ResultsPage() {
           <h1 className="text-xl font-bold text-ink">診断結果が見つかりません</h1>
           <p className="mt-2 text-sm text-ink-muted">
             まだ診断を実行していないか、結果が保存されていない可能性があります。
-            まずは {BRAND.free} を実行してください。
+            トップページからHP URLを入力するだけで、{BRAND.free} を開始できます。
           </p>
-          <div className="mt-6 flex justify-center gap-3">
-            <Link to="/audit" className="btn-primary">
-              {BRAND.free}を試す
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link to="/" className="btn-primary">
+              URLを入力して診断を始める
+            </Link>
+            <Link to="/audit" className="btn-secondary">
+              詳しく入力して診断する
             </Link>
             <Link to="/sample" className="btn-secondary">
               サンプルを見る

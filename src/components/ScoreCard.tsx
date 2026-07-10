@@ -5,6 +5,10 @@ type Props = {
   grade: "A" | "B" | "C" | "D";
   oneLineDiagnosis: string;
   clinicName: string;
+  /** URLのみ診断などで、スコアが暫定評価であることを明示する */
+  provisional?: boolean;
+  /** 入力情報の充足度（低=URLのみ等）。省略時は非表示 */
+  inputCompleteness?: "低" | "中" | "高";
 };
 
 const GRADE_MEANING: Record<Props["grade"], string> = {
@@ -26,6 +30,8 @@ export default function ScoreCard({
   grade,
   oneLineDiagnosis,
   clinicName,
+  provisional,
+  inputCompleteness,
 }: Props) {
   const circumference = 2 * Math.PI * 52;
   const dash = (overallScore / 100) * circumference;
@@ -56,14 +62,27 @@ export default function ScoreCard({
         </div>
 
         <div className="flex-1 text-center sm:text-left">
-          <div className="flex items-center justify-center gap-3 sm:justify-start">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
             <span className="text-sm font-medium text-ink-muted">{clinicName}</span>
             <span className={`badge ${gradeColorClasses(grade)}`}>ランク {grade}</span>
+            {provisional && (
+              <span className="badge border-amber-200 bg-amber-50 text-amber-800">
+                URLのみ診断（暫定）
+              </span>
+            )}
           </div>
-          <h2 className="mt-2 text-xl font-bold text-ink">総合スコア {overallScore} 点</h2>
+          <h2 className="mt-2 text-xl font-bold text-ink">
+            {provisional ? "外部集患力スコア（暫定）" : "総合スコア"} {overallScore} 点
+          </h2>
           <p className="mt-1 text-sm font-medium text-ink">
             ランク {grade}：{GRADE_MEANING[grade]}
           </p>
+          {inputCompleteness && (
+            <p className="mt-1 text-xs text-ink-soft">
+              入力情報充足度: <span className="font-semibold text-ink-muted">{inputCompleteness}</span>
+              {provisional && "（診療科・所在地・SNSなどを追加すると評価精度が上がります）"}
+            </p>
+          )}
           <p className="mt-2 text-sm leading-relaxed text-ink-muted">{oneLineDiagnosis}</p>
         </div>
       </div>
