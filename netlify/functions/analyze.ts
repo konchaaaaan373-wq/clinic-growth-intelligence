@@ -99,8 +99,8 @@ export default async function handler(req: Request): Promise<Response> {
       summary: {
         overallScore,
         grade,
-        oneLineDiagnosis: generateOneLineDiagnosis(overallScore),
-        executiveSummary: generateExecutiveSummary(overallScore, scores),
+        oneLineDiagnosis: generateOneLineDiagnosis(overallScore, scores),
+        executiveSummary: generateExecutiveSummary(overallScore, scores, bundle),
       },
       scores,
       findings: generateFindings(scores, bundle),

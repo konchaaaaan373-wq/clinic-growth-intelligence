@@ -104,10 +104,74 @@ const DEFAULT_NOTE: RiskNote = {
     "客観的根拠の明示、具体的な説明の追加、または別表現への変更を検討してください。最終確認は医療広告ガイドラインや専門家確認を前提にしてください。",
 };
 
+type Severity = "low" | "medium" | "high";
+const SEV_RANK: Record<Severity, number> = { low: 1, medium: 2, high: 3 };
+
+/** 表現ごとの基準severity（文脈で上下する） */
+const BASE_SEVERITY: Record<string, Severity> = {
+  絶対: "high",
+  完治: "high",
+  最高: "high",
+  最強: "high",
+  日本一: "high",
+  "No.1": "high",
+  "地域No.1": "high",
+  奇跡: "high",
+  副作用なし: "high",
+  返金保証: "high",
+  最新: "medium",
+  最先端: "medium",
+  痛くない: "medium",
+  安全: "medium",
+  必ず: "medium",
+  口コミ: "medium",
+  体験談: "medium",
+  ビフォーアフター: "medium",
+  キャンペーン: "medium",
+  今だけ: "medium",
+  限定: "medium",
+  モニター: "medium",
+};
+
 /**
- * テキスト群から要確認表現を抽出する。
- * @param texts 検査対象テキスト（ページ本文・タイトル等）
- * @param labels texts に対応する検出箇所ラベル（任意）
+ * 文脈を踏まえてseverityを判定する。null を返した場合は除外（検出しない）。
+ * - 「必ず診察/医師/受診/確認」など安全確認・受診促進文脈の「必ず」は low（または除外）
+ * - 「安全に◯◯できた/摂れた」など患者状態の記述の「安全」は low
+ * - 「絶対安全/安全です/安全性を保証」など保証表現の「安全」は high
+ */
+function classifySeverity(expression: string, windowText: string): Severity | null {
+  const c = windowText;
+
+  if (expression === "必ず") {
+    // 受診促進・安全確認の文脈（違反リスクは低い、むしろ推奨される表現）
+    if (
+      /必ず[^。]{0,8}(医師|診察|受診|来院|確認|ご相談|相談|検査|指示)/.test(c) ||
+      /(診察|医師|専門医)[^。]{0,6}(のうえ|の上|に相談|にご相談|の判断)/.test(c) ||
+      /必ずしも/.test(c)
+    ) {
+      return "low";
+    }
+    return "medium";
+  }
+
+  if (expression === "安全") {
+    // 保証表現
+    if (/(絶対|完全に|全く|まったく|100%|１００%)[^。]{0,4}安全/.test(c) || /安全(です|性は保証|を保証|であることを保証)/.test(c)) {
+      return "high";
+    }
+    // 患者状態・体験の記述（〜安全に◯◯できた/摂れた/受けられた/過ごせた）
+    if (/安全に[^。]{0,8}(摂|とれ|取れ|受け|過ご|使用|使え|行え|できた|できる)/.test(c)) {
+      return "low";
+    }
+    return "medium";
+  }
+
+  return BASE_SEVERITY[expression] ?? "medium";
+}
+
+/**
+ * テキスト群から要確認表現を抽出する（文脈に応じてseverityを付与）。
+ * 同一表現が複数箇所にある場合は、最も高いseverityの箇所を代表として残す。
  */
 export function detectMedicalAdRisk(
   texts: { text: string; where?: string }[],
@@ -117,27 +181,49 @@ export function detectMedicalAdRisk(
   for (const { text, where } of texts) {
     if (!text) continue;
     const lower = text.toLowerCase();
+
     for (const kw of MEDICAL_AD_RISK_KEYWORDS) {
-      const idx = lower.indexOf(kw.toLowerCase());
-      if (idx === -1) continue;
-
-      // 表現ごとに最初の1件のみ保持（過検出を避ける）
+      const kwLower = kw.toLowerCase();
       const normalized = normalizeKeyword(kw);
-      if (found.has(normalized)) continue;
 
-      const note = NOTE_BY_KEYWORD[normalized] ?? DEFAULT_NOTE;
-      found.set(normalized, {
-        id: `risk-${normalized}`,
-        expression: normalized,
-        context: extractContext(text, idx, kw.length),
-        reason: note.reason,
-        recommendedAction: note.recommendedAction,
-        where,
-      });
+      // すべての出現箇所を走査し、最も高いseverityの箇所を採用
+      let from = 0;
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const idx = lower.indexOf(kwLower, from);
+        if (idx === -1) break;
+        from = idx + kwLower.length;
+
+        const windowText = extractWindow(text, idx, kw.length, 40);
+        const sev = classifySeverity(normalized, windowText);
+        if (!sev) continue;
+
+        const existing = found.get(normalized);
+        if (!existing || SEV_RANK[sev] > SEV_RANK[existing.severity]) {
+          const note = NOTE_BY_KEYWORD[normalized] ?? DEFAULT_NOTE;
+          found.set(normalized, {
+            id: `risk-${normalized}`,
+            expression: normalized,
+            context: extractContext(text, idx, kw.length),
+            severity: sev,
+            reason: note.reason,
+            recommendedAction: note.recommendedAction,
+            where,
+          });
+        }
+      }
     }
   }
 
-  return Array.from(found.values());
+  // 表示順: high → medium → low
+  return Array.from(found.values()).sort((a, b) => SEV_RANK[b.severity] - SEV_RANK[a.severity]);
+}
+
+/** severity判定用の広めの文脈窓（表示用の extractContext より広い） */
+function extractWindow(text: string, idx: number, len: number, pad: number): string {
+  const start = Math.max(0, idx - pad);
+  const end = Math.min(text.length, idx + len + pad);
+  return text.slice(start, end).replace(/\s+/g, "");
 }
 
 function normalizeKeyword(kw: string): string {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { AuditInput } from "../lib/types";
-import { isValidHttpUrl, sanitizeText } from "../lib/utils";
+import { isValidHttpUrl, normalizeUrlInput, sanitizeText } from "../lib/utils";
 import DisclaimerBox from "./DisclaimerBox";
 
 type Props = {
@@ -62,8 +62,9 @@ export default function AuditForm({ onSubmit, submitting, initialValues }: Props
     if (!clinicName.trim()) e.clinicName = "医療機関名を入力してください。";
     if (!websiteUrl.trim()) {
       e.websiteUrl = "HP URLは必須です。";
-    } else if (!isValidHttpUrl(websiteUrl)) {
-      e.websiteUrl = "http:// または https:// で始まる有効なURLを入力してください。";
+    } else if (!isValidHttpUrl(normalizeUrlInput(websiteUrl))) {
+      e.websiteUrl =
+        "https://example-clinic.jp の形式で入力してください。https:// は自動補完できます。";
     }
     if (!specialty.trim()) e.specialty = "診療科を入力してください。";
     if (!location.trim()) e.location = "都道府県/市区町村を入力してください。";
@@ -103,7 +104,7 @@ export default function AuditForm({ onSubmit, submitting, initialValues }: Props
 
     const input: AuditInput = {
       clinicName: sanitizeText(clinicName),
-      websiteUrl: websiteUrl.trim(),
+      websiteUrl: normalizeUrlInput(websiteUrl),
       specialty: sanitizeText(specialty),
       location: sanitizeText(location),
       email: email.trim() || undefined,

@@ -27,11 +27,30 @@ export const CONTACT_EMAIL =
 
 const STORAGE_KEY = "cgi:last-report";
 
+/**
+ * 入力URLの正規化（クイック診断用）。
+ * - 前後スペースを trim
+ * - http:// / https:// が無ければ https:// を自動補完
+ * - 既に http:// / https:// がある場合は変更しない（大文字小文字問わず）
+ *   例: "example-clinic.jp" → "https://example-clinic.jp"
+ *       "www.example-clinic.jp" → "https://www.example-clinic.jp"
+ *       "http://example.com" → "http://example.com"（変更なし）
+ */
+export function normalizeUrlInput(raw: string): string {
+  const trimmed = (raw ?? "").trim();
+  if (!trimmed) return "";
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
 /** URL 形式の簡易バリデーション（http/https のみ許可） */
 export function isValidHttpUrl(value: string): boolean {
   if (!value) return false;
+  const trimmed = value.trim();
+  // 生の空白を含むURLは誤入力とみなす（ブラウザは %20 に補正して通してしまうため明示的に弾く）
+  if (/\s/.test(trimmed)) return false;
   try {
-    const u = new URL(value.trim());
+    const u = new URL(trimmed);
     return u.protocol === "http:" || u.protocol === "https:";
   } catch {
     return false;
