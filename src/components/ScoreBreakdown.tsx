@@ -13,7 +13,7 @@ const ORDER: (keyof Scores)[] = [
 function ScoreRow({ detail }: { detail: ScoreDetail }) {
   const ratio = detail.maxScore > 0 ? detail.score / detail.maxScore : 0;
   return (
-    <div className="py-4">
+    <div className="break-inside-avoid py-4">
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-sm font-semibold text-ink">{detail.label}</span>
         <span className="text-sm tabular-nums text-ink-muted">
@@ -57,8 +57,9 @@ function ScoreRow({ detail }: { detail: ScoreDetail }) {
 }
 
 export default function ScoreBreakdown({ scores }: { scores: Scores }) {
+  // カード全体は1ページより高くなるため、印刷時はカード単位ではなく行単位で分割を避ける
   return (
-    <div className="card p-6">
+    <div className="card print-allow-break p-6">
       <h3 className="text-base font-bold text-ink">スコア内訳</h3>
       <div className="mt-2 divide-y divide-slate-100">
         {ORDER.map((key) => (

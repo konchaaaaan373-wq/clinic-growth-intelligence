@@ -106,7 +106,7 @@ export default async function handler(req: Request): Promise<Response> {
       findings: generateFindings(scores, bundle),
       quickWins: generateQuickWins(scores, bundle),
       growthOpportunities: generateGrowthOpportunities(scores, bundle),
-      channelComments: generateChannelComments(bundle),
+      channelComments: generateChannelComments(bundle, scores),
       medicalAdRiskFindings: website.riskFindings,
       mmmReadiness: buildMMMReadinessPanel(bundle, scores.mmmReadiness),
       rawDiagnostics: {

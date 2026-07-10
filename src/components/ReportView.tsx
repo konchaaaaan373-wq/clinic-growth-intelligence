@@ -1,6 +1,13 @@
 import { Link } from "react-router-dom";
 import type { AuditReport } from "../lib/types";
-import { formatDateTime, downloadReportJson, BRAND } from "../lib/utils";
+import {
+  formatDateTime,
+  downloadReportJson,
+  BRAND,
+  assessInputCompleteness,
+  clinicMetaLabel,
+} from "../lib/utils";
+import { isUrlOnlyAudit } from "../lib/scoring";
 import ScoreCard from "./ScoreCard";
 import ScoreBreakdown from "./ScoreBreakdown";
 import FindingList from "./FindingList";
@@ -19,10 +26,9 @@ type Props = {
 
 export default function ReportView({ report, isSample }: Props) {
   const { summary, scores } = report;
-  const isUrlOnly =
-    report.input.source === "quick-url" ||
-    report.input.specialty === "未指定" ||
-    report.input.location === "未指定";
+  const isUrlOnly = isUrlOnlyAudit(report.input);
+  const metaLabel = clinicMetaLabel(report.input);
+  const inputCompleteness = assessInputCompleteness(report.input);
   const reAuditHref = `/audit?websiteUrl=${encodeURIComponent(report.input.websiteUrl)}`;
 
   return (
@@ -35,8 +41,8 @@ export default function ReportView({ report, isSample }: Props) {
           {isSample && "（サンプル）"}
         </div>
         <div className="mt-0.5 text-xs text-ink-soft">
-          {report.input.clinicName}（{report.input.specialty}・{report.input.location}）／ 作成日時:{" "}
-          {formatDateTime(report.createdAt)}
+          {report.input.clinicName}（{metaLabel}）／ 対象URL: {report.input.websiteUrl} ／
+          作成日時: {formatDateTime(report.createdAt)}
         </div>
       </div>
 
@@ -48,7 +54,7 @@ export default function ReportView({ report, isSample }: Props) {
           </p>
           <h1 className="text-2xl font-bold text-ink">診断レポート</h1>
           <p className="text-sm text-ink-soft">
-            {report.input.clinicName}（{report.input.specialty}・{report.input.location}）／
+            {report.input.clinicName}（{metaLabel}）／ 対象URL: {report.input.websiteUrl} ／
             作成日時: {formatDateTime(report.createdAt)}
             {isSample && "（サンプル）"}
           </p>
@@ -62,8 +68,9 @@ export default function ReportView({ report, isSample }: Props) {
           </button>
         </div>
         <p className="w-full text-xs text-ink-soft no-print">
-          ※ PDF保存時は、ブラウザの印刷ダイアログで「ヘッダーとフッター」をオフにすると、
-          日時・URL・ページ番号が入らず提出用としてきれいに保存できます。
+          ※ PDF保存時は、ブラウザの印刷ダイアログで「ヘッダーとフッター」を<strong>オフ</strong>、
+          「背景グラフィック」を<strong>オン</strong>にすると、日時・URL・ページ番号が入らず
+          提出用としてきれいに保存できます。
         </p>
       </div>
 
@@ -82,6 +89,8 @@ export default function ReportView({ report, isSample }: Props) {
         grade={summary.grade}
         oneLineDiagnosis={summary.oneLineDiagnosis}
         clinicName={report.input.clinicName}
+        provisional={isUrlOnly}
+        inputCompleteness={inputCompleteness}
       />
 
       {/* URLのみ診断の注意（1ページ目・印刷でも表示） */}
@@ -139,6 +148,15 @@ export default function ReportView({ report, isSample }: Props) {
           items={report.quickWins}
           numbered
         />
+      </div>
+
+      {/* ここから詳細（印刷時は改ページして「結論ページ」と分ける） */}
+      <div className="print-break-before border-t border-slate-200 pt-6">
+        <h2 className="text-lg font-bold text-ink">詳細レポート</h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          ここからは各領域のスコア内訳・所見・チャネル別コメントの詳細です。
+          1ページ目の結論を裏付ける根拠としてご参照ください。
+        </p>
       </div>
 
       <ScoreBreakdown scores={scores} />
