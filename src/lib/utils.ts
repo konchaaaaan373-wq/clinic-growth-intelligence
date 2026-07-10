@@ -2,7 +2,7 @@
 // フロントエンド用ユーティリティ
 // =========================================================
 
-import type { AuditReport } from "./types";
+import type { AuditInput, AuditReport } from "./types";
 
 // =========================================================
 // ブランド体系（外向きプロダクト名）
@@ -70,6 +70,36 @@ export function inferClinicNameFromUrl(websiteUrl: string): string {
   } catch {
     return websiteUrl.trim();
   }
+}
+
+/**
+ * 入力情報の充足度。URLのみ診断（暫定評価）の根拠として、総合スコアと併記する。
+ * 診療科・所在地・GoogleマップURL・SNS・予約・注力施策・初診数レンジの入力数で判定。
+ */
+export function assessInputCompleteness(input: AuditInput): "低" | "中" | "高" {
+  let n = 0;
+  if (input.specialty && input.specialty !== "未指定") n += 1;
+  if (input.location && input.location !== "未指定") n += 1;
+  if (input.googleMapsUrl) n += 1;
+  if (input.youtubeUrl || input.instagramUrl || input.tiktokUrl || input.lineUrl) n += 1;
+  if (input.bookingUrl) n += 1;
+  if (input.activeChannels?.length) n += 1;
+  if (input.monthlyNewPatientsRange && input.monthlyNewPatientsRange !== "不明") n += 1;
+  if (n >= 5) return "高";
+  if (n >= 2) return "中";
+  return "低";
+}
+
+/**
+ * レポートヘッダー等で使う診療科・所在地の表示ラベル。
+ * 「未指定・未指定」という雑な見え方を避け、「HP URLのみ診断」等に置き換える。
+ */
+export function clinicMetaLabel(input: AuditInput): string {
+  const specialty = input.specialty && input.specialty !== "未指定" ? input.specialty : "";
+  const location = input.location && input.location !== "未指定" ? input.location : "";
+  if (!specialty && !location) return "HP URLのみ診断";
+  if (specialty && location) return `${specialty}・${location}`;
+  return specialty ? `${specialty}・所在地未指定` : `診療科未指定・${location}`;
 }
 
 /** 入力文字列の軽量サニタイズ（前後空白除去・制御文字除去） */
