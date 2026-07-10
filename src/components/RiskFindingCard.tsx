@@ -4,6 +4,12 @@ type Props = {
   findings: RiskFinding[];
 };
 
+const severityMeta: Record<RiskFinding["severity"], { label: string; cls: string }> = {
+  high: { label: "優先確認", cls: "border-amber-300 bg-amber-100 text-amber-800" },
+  medium: { label: "要確認", cls: "border-amber-200 bg-amber-50 text-amber-700" },
+  low: { label: "低リスク・文脈確認", cls: "border-slate-200 bg-slate-100 text-ink-soft" },
+};
+
 export default function RiskFindingCard({ findings }: Props) {
   return (
     <div className="card p-6">
@@ -11,7 +17,10 @@ export default function RiskFindingCard({ findings }: Props) {
         <h3 className="text-base font-bold text-ink">医療広告リスク（初期スクリーニング）</h3>
       </div>
       <p className="mt-1 text-xs leading-relaxed text-ink-soft">
-        以下は機械的に抽出した「要確認の可能性がある表現」です。違反の断定ではなく、法的判断でもありません。
+        以下は機械的に抽出した「要確認の可能性がある表現」を、文脈に応じて
+        <span className="font-medium text-ink-muted">優先確認 / 要確認 / 低リスク・文脈確認</span>
+        に分類したものです。違反の断定ではなく、法的判断でもありません。
+        「低リスク・文脈確認」は受診促進・患者状態の記述など、問題になりにくい文脈を含みます。
         最終確認は医療広告ガイドラインや専門家確認を前提にしてください。
       </p>
 
@@ -24,8 +33,8 @@ export default function RiskFindingCard({ findings }: Props) {
           {findings.map((f) => (
             <li key={f.id} className="rounded-lg border border-slate-200 bg-slate-50/70 p-4">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="badge border-amber-200 bg-amber-50 text-amber-700">
-                  要確認表現
+                <span className={`badge ${severityMeta[f.severity].cls}`}>
+                  {severityMeta[f.severity].label}
                 </span>
                 <span className="text-sm font-bold text-ink">「{f.expression}」</span>
                 {f.where && (

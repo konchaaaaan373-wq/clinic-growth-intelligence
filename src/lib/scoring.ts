@@ -383,34 +383,37 @@ export function calculateSnsConnectionScore(b: DiagnosticsBundle): ScoreDetail {
   const negatives: string[] = [];
   let score = 0;
 
+  // 未入力は「弱い」と断定せず、評価不能（追加情報が必要）として扱う
   if (b.input.youtubeUrl) {
     score += 3;
     positives.push("YouTube チャンネルURLが入力されています");
   } else {
-    negatives.push("YouTube チャンネルURLが未入力です");
+    negatives.push("YouTube URLは未入力です（未運用の可能性もあります。運用中ならURL追加で評価できます）");
   }
 
   if (b.input.instagramUrl) {
     score += 2;
     positives.push("Instagram URLが入力されています");
   } else {
-    negatives.push("Instagram URLが未入力です");
+    negatives.push("Instagram URLは未入力です（運用中ならURL追加で評価できます）");
   }
 
   if (b.input.tiktokUrl) {
     score += 2;
     positives.push("TikTok URLが入力されています");
   } else {
-    negatives.push("TikTok URLが未入力です");
+    negatives.push("TikTok URLは未入力です（運用中ならURL追加で評価できます）");
   }
 
   if (b.input.lineUrl || w?.hasLineLink) {
     score += 2;
     positives.push("LINE公式アカウントへの導線が確認できます");
   } else {
-    negatives.push("LINE公式アカウントへの導線が確認できませんでした");
+    negatives.push("LINE公式アカウントへの導線は外部から確認できませんでした（URL追加で評価できます）");
   }
 
+  const anySnsEntered =
+    !!b.input.youtubeUrl || !!b.input.instagramUrl || !!b.input.tiktokUrl || !!b.input.lineUrl;
   const hpLinksToSns =
     !!w &&
     (w.snsLinks.youtube ||
@@ -422,8 +425,12 @@ export function calculateSnsConnectionScore(b: DiagnosticsBundle): ScoreDetail {
   if (hpLinksToSns) {
     score += 2;
     positives.push("HP内からSNSへのリンクが確認できます");
+  } else if (anySnsEntered) {
+    // SNS入力があるのにHPからリンクが無い → 連携が外部から確認できない（改善余地）
+    negatives.push("入力されたSNSへのHP内リンクが確認できませんでした（相互接続の改善余地）");
   } else {
-    negatives.push("HP内からSNSへのリンクが確認できませんでした");
+    // SNS未入力 → そもそも評価不能
+    negatives.push("SNSが未入力のため、HPとの相互接続は外部から評価できていません");
   }
 
   // SNSからHP/予約へ戻す導線は外部からは断定できないため、
@@ -465,19 +472,33 @@ export function calculateMedicalAdRiskScore(riskFindings: RiskFinding[]): ScoreD
   const positives: string[] = [];
   const negatives: string[] = [];
 
-  // 検出ごとに1点減点（下限0点）。1表現あたり複数箇所でも1減点に丸める。
-  const uniqueExpressions = new Set(riskFindings.map((f) => f.expression));
-  const deduction = Math.min(10, uniqueExpressions.size);
+  // severity で重み付け減点。low は減点しない（文脈確認のみ）、high を優先的に減点。
+  const counts = { low: 0, medium: 0, high: 0 };
+  const seen = new Set<string>();
+  for (const f of riskFindings) {
+    if (seen.has(f.expression)) continue; // 表現ごとに1回
+    seen.add(f.expression);
+    counts[f.severity] += 1;
+  }
+  const deduction = counts.high * 3 + counts.medium * 1; // low は 0
   const score = clamp(10 - deduction, 0, 10);
 
-  if (uniqueExpressions.size === 0) {
+  const total = counts.high + counts.medium + counts.low;
+  if (total === 0) {
     positives.push("初期スクリーニングでは、注意が必要な表現は検出されませんでした");
   } else {
-    negatives.push(
-      `要確認の表現が ${uniqueExpressions.size} 種類見つかりました（違反の断定ではありません）`,
-    );
-    for (const exp of uniqueExpressions) {
-      negatives.push(`「${exp}」— 文脈により医療広告上の確認が望ましい可能性があります`);
+    if (counts.high > 0) {
+      negatives.push(`優先確認 ${counts.high} 件・要確認 ${counts.medium} 件・文脈確認 ${counts.low} 件（違反の断定ではありません）`);
+    } else {
+      negatives.push(`要確認 ${counts.medium} 件・文脈確認 ${counts.low} 件（違反の断定ではありません）`);
+    }
+    const label = (s: RiskFinding["severity"]) =>
+      s === "high" ? "優先確認" : s === "medium" ? "要確認" : "文脈確認";
+    for (const f of riskFindings) {
+      negatives.push(`【${label(f.severity)}】「${f.expression}」— 文脈により確認が望ましい可能性があります`);
+    }
+    if (counts.high === 0) {
+      positives.push("保証・最上級を断定するような高リスク表現は検出されませんでした");
     }
   }
 
@@ -486,7 +507,7 @@ export function calculateMedicalAdRiskScore(riskFindings: RiskFinding[]): ScoreD
     maxScore: 10,
     label: "医療広告リスク",
     explanation:
-      "医療広告ガイドライン上、文脈によっては確認が望ましい表現を機械的に初期スクリーニングします。これは法的判断ではなく、単語検出のみを根拠に違反を断定するものではありません。最終確認は専門家・ガイドラインを前提としてください。",
+      "医療広告ガイドライン上、文脈によっては確認が望ましい表現を機械的に初期スクリーニングし、文脈に応じて優先確認/要確認/文脈確認に分類します。法的判断ではなく、単語検出のみを根拠に違反を断定するものではありません。最終確認は専門家・ガイドラインを前提としてください。",
     positives,
     negatives,
   };
@@ -582,56 +603,103 @@ export function gradeFromScore(score: number): "A" | "B" | "C" | "D" {
 // =========================================================
 // 文章生成
 // =========================================================
-export function generateOneLineDiagnosis(overall: number): string {
+/** 良好=達成率>=0.8、改善余地=達成率<0.6。医療広告リスクは別枠のため除外して評価。 */
+function categorize(scores: Scores): {
+  good: ScoreDetail[];
+  weak: ScoreDetail[];
+  weakest: ScoreDetail | null;
+} {
+  const keys: (keyof Scores)[] = [
+    "websiteConversion",
+    "seoContent",
+    "meoReadiness",
+    "snsConnection",
+    "mmmReadiness",
+  ];
+  const list = keys.map((k) => scores[k]);
+  const good = list.filter((s) => s.score / s.maxScore >= 0.8);
+  const weak = list
+    .filter((s) => s.score / s.maxScore < 0.6)
+    .sort((a, b) => a.score / a.maxScore - b.score / b.maxScore);
+  return { good, weak, weakest: weak[0] ?? null };
+}
+
+function joinLabels(items: ScoreDetail[]): string {
+  return items.map((s) => `「${s.label}」`).join("");
+}
+
+export function generateOneLineDiagnosis(overall: number, scores: Scores): string {
+  const { good, weakest } = categorize(scores);
   if (overall >= 80) {
     return "外部から見える集患導線は比較的整っています。次は実データ連携で初診寄与の測定へ進む段階です。";
   }
-  if (overall >= 60) {
-    return "基本的な情報発信はできていますが、予約導線・症状別ページ・SNS接続に改善余地があります。";
-  }
-  if (overall >= 40) {
-    return "一部の情報発信はありますが、初診獲得の導線が分断されています。まず基本導線の整備を優先しましょう。";
-  }
-  return "外部から見る限り、集患導線と情報設計が不足しています。広告出稿の前に土台の整備を推奨します。";
+  const goodPart = good.length ? `${joinLabels(good)}は外部から見る限り良好です。` : "";
+  const weakPart = weakest
+    ? `一方で${joinLabels([weakest])}に改善余地があります。`
+    : "基本的な情報発信はできています。";
+  return goodPart + weakPart;
 }
 
-export function generateExecutiveSummary(overall: number, scores: Scores): string {
-  const base = (() => {
-    if (overall >= 80) {
-      return "外部から見える集患導線は比較的整っています。次の段階では、日別初診数と施策データをつなぎ、実際の初診寄与を測定できる状態に近づいています。";
-    }
-    if (overall >= 60) {
-      return "基本的な情報発信はできていますが、予約導線、症状別ページ、SNSからHPへの接続に改善余地があります。MMMを行うには、日別初診数と施策履歴の整備が次の一手です。";
-    }
-    if (overall >= 40) {
-      return "HPやSNSの一部は存在しますが、初診獲得に向けた導線が分断されています。まずは予約導線、初診案内、症状別ページの整備を優先してください。";
-    }
-    return "外部から見る限り、集患導線と情報設計が不足しています。広告出稿の前に、HPの基本導線と診療内容ページを整えることを推奨します。";
-  })();
+export function generateExecutiveSummary(
+  overall: number,
+  scores: Scores,
+  b?: DiagnosticsBundle,
+): string {
+  const { good, weak, weakest } = categorize(scores);
 
-  // 最も弱い領域を1つ添える
-  const weakest = weakestCategory(scores);
-  const tail = weakest
-    ? ` 特に「${weakest.label}」（${weakest.score}/${weakest.maxScore}）に伸びしろがあります。`
-    : "";
+  const parts: string[] = [];
 
-  return base + tail +
-    " なお本診断は外部から観測できる情報に基づく準備度評価であり、実際の初診CPAや初診寄与を断定するものではありません。";
+  if (good.length) {
+    parts.push(`${joinLabels(good)}は外部から見る限り良好です。`);
+  }
+  if (weak.length) {
+    parts.push(`一方で、${joinLabels(weak)}には改善余地があります。`);
+  } else if (!good.length) {
+    parts.push("外部から見える各領域に、まだ整備の余地があります。");
+  }
+
+  // 最弱領域について、断定を避けた具体的な補足を1文添える
+  if (weakest) {
+    parts.push(weakestDetailSentence(weakest, b));
+  }
+
+  // MMM 準備への一手
+  if (scores.mmmReadiness.score / scores.mmmReadiness.maxScore < 0.6) {
+    parts.push("MMMに進むには、日別初診数と施策履歴の整備が次の一手です。");
+  } else if (overall >= 80) {
+    parts.push("次の段階では、日別初診数と施策データをつなぎ、実際の初診寄与を測定できる状態に近づいています。");
+  }
+
+  parts.push(
+    "なお本診断は外部から観測できる情報に基づく準備度評価であり、実際の初診CPAや初診寄与を断定するものではありません。",
+  );
+
+  return parts.join(" ");
 }
 
-function weakestCategory(scores: Scores): ScoreDetail | null {
-  const list = Object.values(scores) as ScoreDetail[];
-  // 医療広告リスクは「低リスク=高得点」のため達成率で比較
-  let weakest: ScoreDetail | null = null;
-  let weakestRatio = Infinity;
-  for (const s of list) {
-    const ratio = s.score / s.maxScore;
-    if (ratio < weakestRatio) {
-      weakestRatio = ratio;
-      weakest = s;
-    }
+/** 最弱カテゴリに応じた、断定を避けた具体的な補足文 */
+function weakestDetailSentence(weakest: ScoreDetail, b?: DiagnosticsBundle): string {
+  const key = weakest.label;
+  if (key === "SNS集患接続") {
+    const noneEntered =
+      b && !b.input.youtubeUrl && !b.input.instagramUrl && !b.input.tiktokUrl && !b.input.lineUrl;
+    return noneEntered
+      ? "特にSNS URLが未入力のため、HPや予約導線との相互接続は外部から評価できていません（未運用の可能性もあります）。"
+      : "特にSNSからHP・予約へ戻す導線の整備余地があります。";
   }
-  return weakest;
+  if (key === "MEO準備度") {
+    return "特にGoogleビジネスプロフィールの整備とHPからの地図リンクに伸びしろがあります。";
+  }
+  if (key === "MMM準備度") {
+    return "特に日別初診数など、施策効果を測るためのデータ整備がこれからの状態です。";
+  }
+  if (key === "HP集患導線") {
+    return "特に予約・電話CTAの常設や初診案内の明確化に伸びしろがあります。";
+  }
+  if (key === "SEO/医療コンテンツ") {
+    return "特に症状・疾患別ページの拡充に伸びしろがあります。";
+  }
+  return `特に「${weakest.label}」（${weakest.score}/${weakest.maxScore}）に伸びしろがあります。`;
 }
 
 // =========================================================
@@ -771,11 +839,103 @@ export function generateQuickWins(scores: Scores, b: DiagnosticsBundle): Recomme
     });
   }
 
-  // 優先度（高>中>低）→ 難易度（低>中>高）で並べ、上位3件
+  // 優先度（高>中>低）→ 難易度（低>中>高）で並べる
   const prScore = (r: Recommendation) => (r.priority === "高" ? 0 : r.priority === "中" ? 1 : 2);
   const dfScore = (r: Recommendation) =>
     r.difficulty === "低" ? 0 : r.difficulty === "中" ? 0.3 : 0.6;
-  return recs.sort((a, c) => prScore(a) - prScore(c) + (dfScore(a) - dfScore(c))).slice(0, 3);
+  const sorted = recs.sort((a, c) => prScore(a) - prScore(c) + (dfScore(a) - dfScore(c)));
+
+  // 3件に満たない場合は fallback で必ず3件にする
+  const result = sorted.slice(0, 3);
+  if (result.length < 3) {
+    for (const fb of fallbackQuickWins(scores, b)) {
+      if (result.length >= 3) break;
+      if (result.some((r) => r.id === fb.id)) continue;
+      result.push(fb);
+    }
+  }
+  return result.slice(0, 3);
+}
+
+/** quickWins が3件に満たない場合の補完候補（スコアの低い領域・URLのみ診断を優先） */
+function fallbackQuickWins(scores: Scores, b: DiagnosticsBundle): Recommendation[] {
+  const fbs: Recommendation[] = [];
+  const isQuickUrl =
+    b.input.source === "quick-url" ||
+    b.input.specialty === "未指定" ||
+    b.input.location === "未指定";
+
+  if (isQuickUrl) {
+    fbs.push({
+      id: "fb-add-info",
+      title: "診療科・所在地・GoogleマップURLを追加して再診断する",
+      detail: "URLのみの暫定評価を、実態に近い診断に引き上げます。",
+      whyImportant:
+        "現在は診療科・所在地・SNSなどが未入力のため、SEO・MEO・SNS接続・症状ページ評価は外部から見える範囲での暫定評価にとどまっています。",
+      whatToFix:
+        "診療科・都道府県/市区町村・GoogleマップURL・各SNS URLを追加して再診断してください。診療科を指定すると症状別ページの評価が具体化します。",
+      expectedEffect:
+        "評価の精度が高まり、診療科に応じた症状別ページの過不足まで具体的に把握できます。",
+      difficulty: "低",
+      priority: "高",
+      impact: "high",
+      effort: "low",
+    });
+  }
+  fbs.push(
+    {
+      id: "fb-meo",
+      title: "GoogleマップURLを入力し、HPから地図リンクを張る",
+      detail: "近隣・マップ検索からの来院を取りこぼさないための基本整備です。",
+      whyImportant:
+        "近隣の患者はGoogleマップや「地域名＋診療科」で医院を探します。GBP未整備・地図リンク無しは来院直前の取りこぼしにつながります。",
+      whatToFix:
+        "GBPの診療時間・住所・電話・カテゴリ・写真を整え、HPのアクセスページからGoogleマップへリンクしてください。",
+      expectedEffect: "近隣からの来院（MEO）につながりやすくなります。実態把握にはGBPインサイト連携が有効です。",
+      difficulty: "中",
+      priority: "中",
+      impact: "medium",
+      effort: "low",
+      relatedScore: "meoReadiness",
+    },
+    {
+      id: "fb-sns",
+      title: "SNSアカウントとHP・予約導線を相互接続する",
+      detail: "運用中のSNSがあれば、HP・予約へ戻す導線を整えます。",
+      whyImportant:
+        "SNSの認知を来院に結びつけるには、プロフィール・投稿からHPの症状ページや予約へ戻す導線が必要です。",
+      whatToFix:
+        "各SNSのプロフィールに予約URLを掲載し、HPからも各SNSへリンクしてください。未運用の場合は、まずGoogleマップとHP導線を優先します。",
+      expectedEffect: "認知から来院への転換を高めやすくなります。効果測定には各SNSのインサイト連携が必要です。",
+      difficulty: "中",
+      priority: "中",
+      impact: "medium",
+      effort: "medium",
+      relatedScore: "snsConnection",
+    },
+    {
+      id: "fb-mmm",
+      title: "日別初診数と施策履歴の記録を始める",
+      detail: "施策効果を後から測るための土台データづくりです。",
+      whyImportant:
+        "どの施策が初診数に効いたかを推定するには、日別初診数（目的変数）と施策履歴（説明変数）の時系列が必要です。",
+      whatToFix:
+        "スプレッドシートで、日付・初診数・休診日を毎日記録し、広告費・投稿日・ポスティングも月次でまとめ始めてください。",
+      expectedEffect:
+        "数か月分たまると、施策別の初診寄与を推定できる状態（Clinic Report Analytics の Clinic Report MMM）に近づきます。",
+      difficulty: "低",
+      priority: "中",
+      impact: "high",
+      effort: "low",
+      relatedScore: "mmmReadiness",
+    },
+  );
+
+  // スコアの低い領域に対応する fallback を優先的に前へ
+  const ratio = (k: keyof Scores) => scores[k].score / scores[k].maxScore;
+  const relatedRatio = (r: Recommendation) =>
+    r.relatedScore ? ratio(r.relatedScore) : -1; // relatedScore 無し（情報追加）は最優先
+  return fbs.sort((a, c) => relatedRatio(a) - relatedRatio(c));
 }
 
 /** 「伸ばせる余地が大きい3点」= 達成率の低いカテゴリ由来の提案 */

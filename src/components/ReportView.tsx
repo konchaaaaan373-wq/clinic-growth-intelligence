@@ -19,6 +19,11 @@ type Props = {
 
 export default function ReportView({ report, isSample }: Props) {
   const { summary, scores } = report;
+  const isUrlOnly =
+    report.input.source === "quick-url" ||
+    report.input.specialty === "未指定" ||
+    report.input.location === "未指定";
+  const reAuditHref = `/audit?websiteUrl=${encodeURIComponent(report.input.websiteUrl)}`;
 
   return (
     <div className="space-y-6 print-full">
@@ -56,6 +61,10 @@ export default function ReportView({ report, isSample }: Props) {
             JSONダウンロード
           </button>
         </div>
+        <p className="w-full text-xs text-ink-soft no-print">
+          ※ PDF保存時は、ブラウザの印刷ダイアログで「ヘッダーとフッター」をオフにすると、
+          日時・URL・ページ番号が入らず提出用としてきれいに保存できます。
+        </p>
       </div>
 
       {report.notices.length > 0 && (
@@ -75,38 +84,57 @@ export default function ReportView({ report, isSample }: Props) {
         clinicName={report.input.clinicName}
       />
 
-      <div className="card p-6">
-        <h3 className="text-base font-bold text-ink">総評（エグゼクティブサマリー）</h3>
-        <p className="mt-2 text-sm leading-relaxed text-ink-muted">{summary.executiveSummary}</p>
-      </div>
-
-      {/* URLのみで診断した場合の情報追加案内 */}
-      {report.input.source === "quick-url" && (
-        <div className="rounded-xl border border-brand-200 bg-brand-50/60 p-5 no-print">
+      {/* URLのみ診断の注意（1ページ目・印刷でも表示） */}
+      {isUrlOnly && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-5 break-inside-avoid">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="max-w-2xl">
-              <div className="text-sm font-bold text-brand-800">
+              <div className="text-sm font-bold text-amber-900">
                 このレポートはHP URLのみで作成されています
               </div>
               <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">
-                診療科、所在地、Googleマップ、YouTube、Instagram、TikTok、LINE、予約URLを追加すると、
-                SEO・MEO・SNS接続・MMM準備度の評価精度が高まります。
+                診療科・所在地・Googleマップ・SNS URLが未入力のため、SEO・MEO・SNS接続・症状ページ評価の一部は
+                外部から見える範囲での暫定評価です。情報を追加して再診断すると、評価精度が高まります。
               </p>
             </div>
-            <Link
-              to={`/audit?websiteUrl=${encodeURIComponent(report.input.websiteUrl)}`}
-              className="btn-primary whitespace-nowrap"
-            >
+            <Link to={reAuditHref} className="btn-primary whitespace-nowrap no-print">
               情報を追加して再診断する
             </Link>
           </div>
         </div>
       )}
 
-      {/* 今すぐ直すべき3点（最重要・アクセント付きで目立たせる） */}
-      <div className="rounded-xl border-2 border-brand-200 bg-brand-50/40 p-1.5">
+      <div className="card p-6 break-inside-avoid">
+        <h3 className="text-base font-bold text-ink">総評（エグゼクティブサマリー）</h3>
+        <p className="mt-2 text-sm leading-relaxed text-ink-muted">{summary.executiveSummary}</p>
+
+        {/* 1ページ目で「何を直すべきか」が分かる要約 */}
+        <div className="mt-4 border-t border-slate-100 pt-4">
+          <div className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
+            今すぐ直すべき3点（要約）
+          </div>
+          <ol className="mt-2 space-y-1.5">
+            {report.quickWins.map((q, i) => (
+              <li key={q.id} className="flex items-start gap-2 text-sm">
+                <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-brand-700 text-[11px] font-bold text-white">
+                  {i + 1}
+                </span>
+                <span className="font-medium text-ink">{q.title}</span>
+                {q.priority && (
+                  <span className="badge border-slate-200 bg-slate-50 text-ink-soft">
+                    優先度 {q.priority}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+
+      {/* 今すぐ直すべき3点（詳細・アクセント付きで目立たせる） */}
+      <div className="rounded-xl border-2 border-brand-200 bg-brand-50/40 p-1.5 break-inside-avoid">
         <RecommendationList
-          title="今すぐ直すべき3点"
+          title="今すぐ直すべき3点（詳細）"
           subtitle="効果が大きく着手しやすい改善から着手しましょう。各項目に「なぜ重要か／何を直すか／期待される効果」を記載しています。"
           items={report.quickWins}
           numbered

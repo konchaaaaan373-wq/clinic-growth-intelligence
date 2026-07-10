@@ -93,6 +93,8 @@ export type RiskFinding = {
   expression: string;
   /** 検出箇所の文脈スニペット */
   context: string;
+  /** 文脈を踏まえた確認優先度（low=低リスク・文脈確認 / medium=要確認 / high=優先確認） */
+  severity: "low" | "medium" | "high";
   /** 注意理由（なぜ確認が望ましいか） */
   reason: string;
   /** 推奨対応 */
