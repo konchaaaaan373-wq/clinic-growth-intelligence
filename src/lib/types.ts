@@ -33,6 +33,12 @@ export type ScoreDetail = {
   explanation: string;
   positives: string[];
   negatives: string[];
+  /**
+   * このカテゴリを評価できたか。
+   * "scored"（既定）= 通常評価 / "not_evaluable" = 取得失敗等で評価不能（スコアは参考外）。
+   * 省略時は "scored" とみなす。
+   */
+  status?: "scored" | "not_evaluable";
 };
 
 /** 診断で検出した所見（良い点・課題点の両方を含む） */
@@ -185,10 +191,14 @@ export type AuditReport = {
   createdAt: string;
   input: AuditInput;
   summary: {
-    overallScore: number;
-    grade: "A" | "B" | "C" | "D";
+    /** 取得失敗時は null（総合スコアを出さない = 評価不能） */
+    overallScore: number | null;
+    /** 取得失敗時は null（ランクを出さない = 評価不能） */
+    grade: "A" | "B" | "C" | "D" | null;
     oneLineDiagnosis: string;
     executiveSummary: string;
+    /** 対象サイトの取得に失敗し、サイト内部評価ができなかったか */
+    siteFetchFailed: boolean;
   };
   scores: Scores;
   findings: Finding[];

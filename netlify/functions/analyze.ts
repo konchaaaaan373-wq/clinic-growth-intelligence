@@ -22,6 +22,11 @@ import {
   generateGrowthOpportunities,
   generateFindings,
   generateChannelComments,
+  buildFetchFailedScores,
+  generateFetchFailedQuickWins,
+  generateFetchFailedFindings,
+  FETCH_FAILED_ONE_LINE,
+  FETCH_FAILED_SUMMARY,
 } from "../../src/lib/scoring";
 import { parseWebsite } from "./lib/parseWebsite";
 import { runPageSpeed } from "./lib/pagespeed";
@@ -63,7 +68,7 @@ export default async function handler(req: Request): Promise<Response> {
     const website = await parseWebsite(input.websiteUrl);
     if (website.diagnostics.status === "failed") {
       notices.push(
-        "サイト取得に失敗しましたが、入力情報をもとに可能な範囲で診断しました。",
+        "対象サイトの取得に失敗したため、HP導線・SEO・MEO・医療広告リスクは評価できませんでした（評価不能）。これはサイト品質の評価ではありません。",
       );
     }
 
@@ -88,27 +93,13 @@ export default async function handler(req: Request): Promise<Response> {
       websiteText: website.combinedText,
     };
 
-    const scores = buildScores(bundle, website.riskFindings);
-    const overallScore = calculateOverallScore(scores);
-    const grade = gradeFromScore(overallScore);
+    const siteFetchFailed = website.diagnostics.status === "failed";
 
-    const report: AuditReport = {
+    // 両分岐で共通のメタ情報（id/日時/入力/生データ/notices）
+    const common = {
       id: randomUUID(),
       createdAt: new Date().toISOString(),
       input,
-      summary: {
-        overallScore,
-        grade,
-        oneLineDiagnosis: generateOneLineDiagnosis(overallScore, scores),
-        executiveSummary: generateExecutiveSummary(overallScore, scores, bundle),
-      },
-      scores,
-      findings: generateFindings(scores, bundle),
-      quickWins: generateQuickWins(scores, bundle),
-      growthOpportunities: generateGrowthOpportunities(scores, bundle),
-      channelComments: generateChannelComments(bundle, scores),
-      medicalAdRiskFindings: website.riskFindings,
-      mmmReadiness: buildMMMReadinessPanel(bundle, scores.mmmReadiness),
       rawDiagnostics: {
         website: website.diagnostics,
         pagespeed,
@@ -116,6 +107,50 @@ export default async function handler(req: Request): Promise<Response> {
       },
       notices,
     };
+
+    let report: AuditReport;
+    if (siteFetchFailed) {
+      // --- 取得失敗（評価不能）: 総合スコア/ランクは出さず、HP内部評価は not_evaluable ---
+      const scores = buildFetchFailedScores(bundle);
+      report = {
+        ...common,
+        summary: {
+          overallScore: null,
+          grade: null,
+          oneLineDiagnosis: FETCH_FAILED_ONE_LINE,
+          executiveSummary: FETCH_FAILED_SUMMARY,
+          siteFetchFailed: true,
+        },
+        scores,
+        findings: generateFetchFailedFindings(website.diagnostics),
+        quickWins: generateFetchFailedQuickWins(),
+        growthOpportunities: [],
+        channelComments: generateChannelComments(bundle, scores),
+        medicalAdRiskFindings: [], // 本文未取得のため評価不能（カード側で「未評価」表示）
+        mmmReadiness: buildMMMReadinessPanel(bundle, scores.mmmReadiness),
+      };
+    } else {
+      const scores = buildScores(bundle, website.riskFindings);
+      const overallScore = calculateOverallScore(scores);
+      const grade = gradeFromScore(overallScore);
+      report = {
+        ...common,
+        summary: {
+          overallScore,
+          grade,
+          oneLineDiagnosis: generateOneLineDiagnosis(overallScore, scores),
+          executiveSummary: generateExecutiveSummary(overallScore, scores, bundle),
+          siteFetchFailed: false,
+        },
+        scores,
+        findings: generateFindings(scores, bundle),
+        quickWins: generateQuickWins(scores, bundle),
+        growthOpportunities: generateGrowthOpportunities(scores, bundle),
+        channelComments: generateChannelComments(bundle, scores),
+        medicalAdRiskFindings: website.riskFindings,
+        mmmReadiness: buildMMMReadinessPanel(bundle, scores.mmmReadiness),
+      };
+    }
 
     return json({ ok: true, report }, 200);
   } catch (e) {

@@ -26,7 +26,8 @@ type Props = {
 
 export default function ReportView({ report, isSample }: Props) {
   const { summary, scores } = report;
-  const isUrlOnly = isUrlOnlyAudit(report.input);
+  const fetchFailed = summary.siteFetchFailed;
+  const isUrlOnly = isUrlOnlyAudit(report.input) && !fetchFailed;
   const metaLabel = clinicMetaLabel(report.input);
   const inputCompleteness = assessInputCompleteness(report.input);
   const reAuditHref = `/audit?websiteUrl=${encodeURIComponent(report.input.websiteUrl)}`;
@@ -84,13 +85,34 @@ export default function ReportView({ report, isSample }: Props) {
         </DisclaimerBox>
       )}
 
+      {/* 取得失敗の大きな注意（1ページ目・印刷でも表示） */}
+      {fetchFailed && (
+        <div className="rounded-xl border-2 border-rose-200 bg-rose-50/70 p-5 break-inside-avoid">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="max-w-2xl">
+              <div className="text-base font-bold text-rose-900">サイト取得に失敗しました</div>
+              <p className="mt-1 text-sm font-semibold text-rose-800">
+                この結果はサイト品質の評価ではありません（評価不能）。
+              </p>
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">
+                URLの入力誤り、一時的な通信障害、外部アクセス制限（Botブロック等）の可能性があります。
+                URLを確認して再診断するか、詳細フォームから情報を追加してください。
+              </p>
+            </div>
+            <Link to={reAuditHref} className="btn-primary whitespace-nowrap no-print">
+              再診断する
+            </Link>
+          </div>
+        </div>
+      )}
+
       <ScoreCard
         overallScore={summary.overallScore}
         grade={summary.grade}
         oneLineDiagnosis={summary.oneLineDiagnosis}
         clinicName={report.input.clinicName}
         provisional={isUrlOnly}
-        inputCompleteness={inputCompleteness}
+        inputCompleteness={fetchFailed ? undefined : inputCompleteness}
       />
 
       {/* URLのみ診断の注意（1ページ目・印刷でも表示） */}
@@ -120,7 +142,7 @@ export default function ReportView({ report, isSample }: Props) {
         {/* 1ページ目で「何を直すべきか」が分かる要約 */}
         <div className="mt-4 border-t border-slate-100 pt-4">
           <div className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
-            今すぐ直すべき3点（要約）
+            {fetchFailed ? "次にすべきこと（3点）" : "今すぐ直すべき3点（要約）"}
           </div>
           <ol className="mt-2 space-y-1.5">
             {report.quickWins.map((q, i) => (
@@ -143,8 +165,12 @@ export default function ReportView({ report, isSample }: Props) {
       {/* 今すぐ直すべき3点（詳細・アクセント付きで目立たせる） */}
       <div className="rounded-xl border-2 border-brand-200 bg-brand-50/40 p-1.5 break-inside-avoid">
         <RecommendationList
-          title="今すぐ直すべき3点（詳細）"
-          subtitle="効果が大きく着手しやすい改善から着手しましょう。各項目に「なぜ重要か／何を直すか／期待される効果」を記載しています。"
+          title={fetchFailed ? "次にすべきこと（詳細）" : "今すぐ直すべき3点（詳細）"}
+          subtitle={
+            fetchFailed
+              ? "サイトを取得できなかったため、まずは再診断・情報追加・アクセス制限の確認を行ってください。"
+              : "効果が大きく着手しやすい改善から着手しましょう。各項目に「なぜ重要か／何を直すか／期待される効果」を記載しています。"
+          }
           items={report.quickWins}
           numbered
         />
@@ -162,12 +188,14 @@ export default function ReportView({ report, isSample }: Props) {
       <ScoreBreakdown scores={scores} />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <RecommendationList
-          title="伸ばせる余地が大きい3点"
-          subtitle="現状スコアが低く、改善インパクトが大きい領域です。"
-          items={report.growthOpportunities}
-          numbered
-        />
+        {report.growthOpportunities.length > 0 && (
+          <RecommendationList
+            title="伸ばせる余地が大きい3点"
+            subtitle="現状スコアが低く、改善インパクトが大きい領域です。"
+            items={report.growthOpportunities}
+            numbered
+          />
+        )}
         <FindingList title="主な所見" findings={report.findings} />
       </div>
 
@@ -180,7 +208,10 @@ export default function ReportView({ report, isSample }: Props) {
         </div>
       </div>
 
-      <RiskFindingCard findings={report.medicalAdRiskFindings} />
+      <RiskFindingCard
+        findings={report.medicalAdRiskFindings}
+        notEvaluable={scores.medicalAdRisk.status === "not_evaluable"}
+      />
 
       <MMMReadinessPanel readiness={report.mmmReadiness} />
 

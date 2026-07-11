@@ -2,6 +2,8 @@ import type { RiskFinding } from "../lib/types";
 
 type Props = {
   findings: RiskFinding[];
+  /** サイト本文を取得できず評価不能な場合 */
+  notEvaluable?: boolean;
 };
 
 const severityMeta: Record<RiskFinding["severity"], { label: string; cls: string }> = {
@@ -10,10 +12,22 @@ const severityMeta: Record<RiskFinding["severity"], { label: string; cls: string
   low: { label: "低リスク・文脈確認", cls: "border-slate-200 bg-slate-100 text-ink-soft" },
 };
 
-export default function RiskFindingCard({ findings }: Props) {
+export default function RiskFindingCard({ findings, notEvaluable }: Props) {
   // 優先確認・要確認は詳細カードで示し、低リスク（減点なし）は控えめな一覧にとどめる
   const primary = findings.filter((f) => f.severity !== "low");
   const lows = findings.filter((f) => f.severity === "low");
+
+  if (notEvaluable) {
+    return (
+      <div className="card p-6">
+        <h3 className="text-base font-bold text-ink">医療広告リスク（初期スクリーニング）</h3>
+        <p className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-ink-muted">
+          サイト本文を取得できなかったため、要確認表現の有無は<strong className="text-ink">評価できません</strong>。
+          「注意表現なし」という意味ではありません。URLを確認して再診断すると評価できます。
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="card p-6">

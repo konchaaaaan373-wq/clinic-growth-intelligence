@@ -11,21 +11,38 @@ const ORDER: (keyof Scores)[] = [
 ];
 
 function ScoreRow({ detail }: { detail: ScoreDetail }) {
+  const notEvaluable = detail.status === "not_evaluable";
   const ratio = detail.maxScore > 0 ? detail.score / detail.maxScore : 0;
   return (
     <div className="break-inside-avoid py-4">
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-sm font-semibold text-ink">{detail.label}</span>
-        <span className="text-sm tabular-nums text-ink-muted">
-          <span className="font-bold text-ink">{detail.score}</span> / {detail.maxScore}
-        </span>
+        {notEvaluable ? (
+          <span className="badge border-slate-300 bg-slate-100 text-ink-soft">未評価</span>
+        ) : (
+          <span className="text-sm tabular-nums text-ink-muted">
+            <span className="font-bold text-ink">{detail.score}</span> / {detail.maxScore}
+          </span>
+        )}
       </div>
-      <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
-        <div
-          className={`h-full rounded-full ${scoreBarColor(ratio)}`}
-          style={{ width: `${Math.round(ratio * 100)}%` }}
-        />
-      </div>
+      {notEvaluable ? (
+        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+          <div
+            className="h-full w-full rounded-full"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(45deg,#e2e8f0,#e2e8f0 4px,#f1f5f9 4px,#f1f5f9 8px)",
+            }}
+          />
+        </div>
+      ) : (
+        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+          <div
+            className={`h-full rounded-full ${scoreBarColor(ratio)}`}
+            style={{ width: `${Math.round(ratio * 100)}%` }}
+          />
+        </div>
+      )}
       <p className="mt-2 text-xs leading-relaxed text-ink-soft">{detail.explanation}</p>
 
       {(detail.positives.length > 0 || detail.negatives.length > 0) && (
