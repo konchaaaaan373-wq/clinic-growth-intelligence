@@ -391,6 +391,7 @@ export function calculateMeoReadinessScore(b: DiagnosticsBundle): ScoreDetail {
 // =========================================================
 export function calculateSnsConnectionScore(b: DiagnosticsBundle): ScoreDetail {
   const w = b.website;
+  const fetchFailed = w?.status === "failed";
   const positives: string[] = [];
   const negatives: string[] = [];
   let score = 0;
@@ -420,6 +421,8 @@ export function calculateSnsConnectionScore(b: DiagnosticsBundle): ScoreDetail {
   if (b.input.lineUrl || w?.hasLineLink) {
     score += 2;
     positives.push("LINE公式アカウントへの導線が確認できます");
+  } else if (fetchFailed) {
+    negatives.push("LINE公式アカウントURLは未入力です（運用中ならURL追加で評価できます）");
   } else {
     negatives.push("LINE公式アカウントへの導線は外部から確認できませんでした（URL追加で評価できます）");
   }
@@ -437,6 +440,13 @@ export function calculateSnsConnectionScore(b: DiagnosticsBundle): ScoreDetail {
   if (hpLinksToSns) {
     score += 2;
     positives.push("HP内からSNSへのリンクが確認できます");
+  } else if (fetchFailed) {
+    // HP未取得: 相互リンクの有無は断定しない
+    negatives.push(
+      anySnsEntered
+        ? "入力されたSNSは確認できますが、HP内での相互リンクの有無はHP未取得のため評価できません"
+        : "HP未取得のため、HPとSNSの相互リンクは評価できません（SNS URLを追加すると評価できます）",
+    );
   } else if (anySnsEntered) {
     // SNS入力があるのにHPからリンクが無い → 連携が外部から確認できない（改善余地）
     negatives.push("入力されたSNSへのHP内リンクが確認できませんでした（相互接続の改善余地）");
@@ -453,6 +463,8 @@ export function calculateSnsConnectionScore(b: DiagnosticsBundle): ScoreDetail {
   if (hasReturnPath) {
     score += 2;
     positives.push("SNSからHP/予約へ戻す導線を作れる素地があります（予約導線が存在）");
+  } else if (fetchFailed) {
+    negatives.push("HP未取得のため、SNSからHP/予約へ戻す導線は評価できません");
   } else {
     negatives.push("SNSからHP/予約へ戻す導線の整備余地があります");
   }
@@ -543,6 +555,7 @@ export function calculateMedicalAdRiskScore(riskFindings: RiskFinding[]): ScoreD
 // 6. MMM準備度スコア（10点）
 // =========================================================
 export function calculateMMMReadinessScore(b: DiagnosticsBundle): ScoreDetail {
+  const fetchFailed = b.website?.status === "failed";
   const positives: string[] = [];
   const negatives: string[] = [];
   let score = 0;
@@ -580,12 +593,16 @@ export function calculateMMMReadinessScore(b: DiagnosticsBundle): ScoreDetail {
   if (b.input.bookingUrl || b.website?.hasBookingLink) {
     score += 1;
     positives.push("予約導線があり、コンバージョン地点が明確です");
+  } else if (fetchFailed) {
+    negatives.push("予約導線の有無はHP未取得のため評価できません（予約システムURLを追加すると評価できます）");
   } else {
     negatives.push("予約導線が不明確で、成果地点の特定が難しい可能性があります");
   }
   if (textIncludesAny(b.websiteText, BLOG_KEYWORDS)) {
     score += 1;
     positives.push("コラム/ブログがあり、コンテンツ施策日を説明変数化しやすい状態です");
+  } else if (fetchFailed) {
+    negatives.push("コラム/ブログの有無はHP未取得のため評価できません");
   } else {
     negatives.push("コラム/ブログが確認できず、コンテンツ施策の時系列化が難しい可能性があります");
   }
@@ -1202,6 +1219,7 @@ export function generateFindings(scores: Scores, b: DiagnosticsBundle): Finding[
 // =========================================================
 export function generateChannelComments(b: DiagnosticsBundle, scores: Scores): ChannelComment[] {
   const w = b.website;
+  const fetchFailed = w?.status === "failed";
   const comments: ChannelComment[] = [];
   const cov = analyzeSpecialtyCoverage(b.input.specialty, b.websiteText);
   const hasBooking = !!(b.input.bookingUrl || w?.hasBookingLink);
@@ -1269,12 +1287,22 @@ export function generateChannelComments(b: DiagnosticsBundle, scores: Scores): C
   comments.push({
     channel: "googleMap",
     channelLabel: "Googleマップ / MEO",
-    status: b.input.googleMapsUrl ? (w?.hasGoogleMapsLink ? "good" : "partial") : "weak",
-    comment: b.input.googleMapsUrl
-      ? w?.hasGoogleMapsLink
-        ? "GoogleマップURLの入力と、HPからの地図リンクを確認しました。口コミ数・評価点・写真・カテゴリ設計は外部URLだけでは断定できないため、実態の把握にはGBPインサイトの連携が有効です。"
-        : "GoogleマップURLは確認できましたが、HP（アクセスページ等）からGoogleマップへのリンクが見当たりません。地図リンクを設置し、GBPの診療時間・住所・電話をHPと一致させてください。"
-      : "GoogleビジネスプロフィールのURLが未入力です。「地域名＋診療科」やマップ検索は来院直前の患者が多いため、GBPの整備とHPへの地図リンク掲載を優先することを推奨します。",
+    status: fetchFailed
+      ? "unknown"
+      : b.input.googleMapsUrl
+        ? w?.hasGoogleMapsLink
+          ? "good"
+          : "partial"
+        : "weak",
+    comment: fetchFailed
+      ? b.input.googleMapsUrl
+        ? "GoogleマップURLは確認できました。ただしHPを取得できなかったため、HP内での地図リンクの有無は評価できません。口コミ数・写真などの実態把握にはGBPインサイトの連携が有効です。"
+        : "GoogleビジネスプロフィールのURLが未入力で、かつHPも取得できなかったため、HP内の地図リンクの有無は評価できません。URLを追加/確認して再診断してください。"
+      : b.input.googleMapsUrl
+        ? w?.hasGoogleMapsLink
+          ? "GoogleマップURLの入力と、HPからの地図リンクを確認しました。口コミ数・評価点・写真・カテゴリ設計は外部URLだけでは断定できないため、実態の把握にはGBPインサイトの連携が有効です。"
+          : "GoogleマップURLは確認できましたが、HP（アクセスページ等）からGoogleマップへのリンクが見当たりません。地図リンクを設置し、GBPの診療時間・住所・電話をHPと一致させてください。"
+        : "GoogleビジネスプロフィールのURLが未入力です。「地域名＋診療科」やマップ検索は来院直前の患者が多いため、GBPの整備とHPへの地図リンク掲載を優先することを推奨します。",
   });
 
   // YouTube
@@ -1282,13 +1310,15 @@ export function generateChannelComments(b: DiagnosticsBundle, scores: Scores): C
   comments.push({
     channel: "youtube",
     channelLabel: "YouTube",
-    status: b.input.youtubeUrl ? (yt?.status === "success" ? "good" : "partial") : "unknown",
+    status: b.input.youtubeUrl ? (fetchFailed ? "partial" : yt?.status === "success" ? "good" : "partial") : "unknown",
     comment: b.input.youtubeUrl
-      ? !(hasBooking || hasLine)
-        ? "YouTubeアカウントは入力されていますが、HP・予約ページ・LINEへの導線が弱い可能性があります。動画視聴後の行動先（予約・症状ページ）を概要欄と終了画面で明確にしてください。"
-        : yt?.status === "success"
-          ? `チャンネル「${yt.channelTitle ?? "取得済み"}」を確認しました。各動画の概要欄先頭に予約URLを置き、症状解説動画は対応する症状ページ${symptomHint}へリンクすると、視聴を来院に結びつけやすくなります。`
-          : "YouTube URLの入力を確認しました（API詳細取得は未実施/失敗）。動画概要欄の先頭に予約URLを掲載し、HPの症状ページへ戻す導線を作ると効果的です。"
+      ? fetchFailed
+        ? "YouTube URLは確認できました。HPを取得できなかったため、動画からHP・予約への相互リンクは評価できませんが、各動画の概要欄先頭に予約URLを掲載することは有効です。"
+        : !(hasBooking || hasLine)
+          ? "YouTubeアカウントは入力されていますが、HP・予約ページ・LINEへの導線が弱い可能性があります。動画視聴後の行動先（予約・症状ページ）を概要欄と終了画面で明確にしてください。"
+          : yt?.status === "success"
+            ? `チャンネル「${yt.channelTitle ?? "取得済み"}」を確認しました。各動画の概要欄先頭に予約URLを置き、症状解説動画は対応する症状ページ${symptomHint}へリンクすると、視聴を来院に結びつけやすくなります。`
+            : "YouTube URLの入力を確認しました（API詳細取得は未実施/失敗）。動画概要欄の先頭に予約URLを掲載し、HPの症状ページへ戻す導線を作ると効果的です。"
       : "YouTube URLは未入力です。運用がある場合は、症状解説動画から予約・症状ページへ戻す導線設計が有効です。",
   });
 
@@ -1313,12 +1343,24 @@ export function generateChannelComments(b: DiagnosticsBundle, scores: Scores): C
   });
 
   // LINE / 予約導線
+  const lineOrBookingEntered = !!b.input.lineUrl || !!b.input.bookingUrl;
   comments.push({
     channel: "lineBooking",
     channelLabel: "LINE / 予約導線",
-    status: hasLine && hasBooking ? "good" : hasLine || hasBooking ? "partial" : "weak",
-    comment:
-      hasLine && hasBooking
+    status: fetchFailed
+      ? lineOrBookingEntered
+        ? "partial"
+        : "unknown"
+      : hasLine && hasBooking
+        ? "good"
+        : hasLine || hasBooking
+          ? "partial"
+          : "weak",
+    comment: fetchFailed
+      ? lineOrBookingEntered
+        ? "入力されたLINE/予約URLは確認できますが、HPを取得できなかったため、HP内での予約導線の掲載や相互リンクは評価できません。"
+        : "LINE・予約システムURLは未入力で、かつHPも取得できなかったため、HP内の予約導線の有無は評価できません。URLを追加/確認して再診断してください。"
+      : hasLine && hasBooking
         ? "LINEと予約導線の両方が確認できます。友だち追加後の受診案内・予約リマインド・再来院導線まで設計すると、継続来院につながります。"
         : hasLine
           ? "LINE導線は確認できましたが、Web予約への接続が弱い状態です。LINEのリッチメニューから予約へ直接つなぐと、初診予約の取りこぼしを減らせます。"

@@ -95,14 +95,25 @@ export default async function handler(req: Request): Promise<Response> {
 
     const siteFetchFailed = website.diagnostics.status === "failed";
 
+    // 両分岐で共通のメタ情報（id/日時/入力/生データ/notices）
+    const common = {
+      id: randomUUID(),
+      createdAt: new Date().toISOString(),
+      input,
+      rawDiagnostics: {
+        website: website.diagnostics,
+        pagespeed,
+        youtube,
+      },
+      notices,
+    };
+
     let report: AuditReport;
     if (siteFetchFailed) {
       // --- 取得失敗（評価不能）: 総合スコア/ランクは出さず、HP内部評価は not_evaluable ---
       const scores = buildFetchFailedScores(bundle);
       report = {
-        id: randomUUID(),
-        createdAt: new Date().toISOString(),
-        input,
+        ...common,
         summary: {
           overallScore: null,
           grade: null,
@@ -117,21 +128,13 @@ export default async function handler(req: Request): Promise<Response> {
         channelComments: generateChannelComments(bundle, scores),
         medicalAdRiskFindings: [], // 本文未取得のため評価不能（カード側で「未評価」表示）
         mmmReadiness: buildMMMReadinessPanel(bundle, scores.mmmReadiness),
-        rawDiagnostics: {
-          website: website.diagnostics,
-          pagespeed,
-          youtube,
-        },
-        notices,
       };
     } else {
       const scores = buildScores(bundle, website.riskFindings);
       const overallScore = calculateOverallScore(scores);
       const grade = gradeFromScore(overallScore);
       report = {
-        id: randomUUID(),
-        createdAt: new Date().toISOString(),
-        input,
+        ...common,
         summary: {
           overallScore,
           grade,
@@ -146,12 +149,6 @@ export default async function handler(req: Request): Promise<Response> {
         channelComments: generateChannelComments(bundle, scores),
         medicalAdRiskFindings: website.riskFindings,
         mmmReadiness: buildMMMReadinessPanel(bundle, scores.mmmReadiness),
-        rawDiagnostics: {
-          website: website.diagnostics,
-          pagespeed,
-          youtube,
-        },
-        notices,
       };
     }
 
