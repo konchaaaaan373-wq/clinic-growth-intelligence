@@ -185,7 +185,7 @@ export default function ReportView({ report, isSample }: Props) {
           subtitle={
             fetchFailed
               ? "サイトを取得できなかったため、まずは再診断・情報追加・アクセス制限の確認を行ってください。"
-              : "優先度が高く着手しやすい改善から着手しましょう。各項目に「なぜ重要か／何を直すか／改善の見込み」を記載しています。"
+              : "優先度が高く着手しやすい改善から着手しましょう。各項目に「なぜ重要か／何を直すか／改善の狙い」を記載しています。"
           }
           items={report.quickWins}
           numbered

@@ -67,7 +67,7 @@ export type Recommendation = {
   whyImportant?: string;
   /** 具体的に何を直すか */
   whatToFix?: string;
-  /** 改善の見込み（定性表現のみ・数値予測や断定はしない） */
+  /** 改善の狙い（定性表現のみ・数値予測や断定はしない） */
   expectedEffect?: string;
   /** 難易度 */
   difficulty?: "低" | "中" | "高";

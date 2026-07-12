@@ -512,7 +512,7 @@ export function calculateMedicalAdRiskScore(riskFindings: RiskFinding[]): ScoreD
   if (total === 0) {
     positives.push("初期スクリーニングでは、注意が必要な表現は検出されませんでした");
   } else if (!hasDeduction) {
-    // low のみ: 受診促進・副作用説明など問題になりにくい文脈のため減点しない
+    // low のみ: 受診促進・副作用説明などの文脈確認のみのため減点しない
     positives.push(
       `優先確認・要確認にあたる表現は検出されませんでした（文脈確認 ${counts.low} 件のみ・減点なし）`,
     );
@@ -525,13 +525,13 @@ export function calculateMedicalAdRiskScore(riskFindings: RiskFinding[]): ScoreD
     const countParts: string[] = [];
     if (counts.high > 0) countParts.push(`優先確認 ${counts.high} 件`);
     if (counts.medium > 0) countParts.push(`要確認 ${counts.medium} 件`);
-    if (counts.low > 0) countParts.push(`文脈確認 ${counts.low} 件（問題になりにくい文脈・減点なし）`);
+    if (counts.low > 0) countParts.push(`文脈確認 ${counts.low} 件（減点なし）`);
     negatives.push(`${countParts.join("・")}（違反の断定ではありません）`);
     const label = (s: RiskFinding["severity"]) => (s === "high" ? "優先確認" : "要確認");
     for (const f of riskFindings) {
       negatives.push(
         f.severity === "low"
-          ? `【文脈確認】「${f.expression}」— 問題になりにくい文脈のため減点していません`
+          ? `【文脈確認】「${f.expression}」— 文脈確認として記録した項目です（減点なし）`
           : `【${label(f.severity)}】「${f.expression}」— 文脈により確認が望ましい可能性があります`,
       );
     }

@@ -42,7 +42,7 @@ function StructuredBody({ r }: { r: Recommendation }) {
       )}
       {r.expectedEffect && (
         <p>
-          <span className="font-semibold text-ink">改善の見込み：</span>
+          <span className="font-semibold text-ink">改善の狙い：</span>
           <span className="text-ink-muted">{r.expectedEffect}</span>
         </p>
       )}

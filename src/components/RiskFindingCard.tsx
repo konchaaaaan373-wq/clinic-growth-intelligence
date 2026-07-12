@@ -39,8 +39,8 @@ export default function RiskFindingCard({ findings, notEvaluable }: Props) {
         <span className="font-medium text-ink-muted">優先確認 / 要確認 / 文脈確認</span>
         に分類したものです。この分類は人が確認する際の優先順位を示すもので、
         違反の断定ではなく、法的判断・法的リスクの評価でもありません。
-        「文脈確認」は受診促進・副作用やリスクの説明など、問題になりにくい文脈で、
-        スコアの減点対象にもしていません。
+        「文脈確認」は受診促進・副作用やリスクの説明などの文脈で検出された確認項目で、
+        スコアの減点対象にはしていません。
         最終確認は医療広告ガイドラインや専門家確認を前提にしてください。
       </p>
 
@@ -52,8 +52,8 @@ export default function RiskFindingCard({ findings, notEvaluable }: Props) {
 
       {findings.length > 0 && primary.length === 0 && (
         <p className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
-          優先確認・要確認にあたる表現は検出されませんでした。以下は問題になりにくい文脈での検出
-          （文脈確認）のみで、スコアの減点はありません。
+          優先確認・要確認にあたる表現は検出されませんでした。以下は文脈確認として記録した
+          項目のみで、スコアの減点はありません。
         </p>
       )}
 
@@ -96,7 +96,7 @@ export default function RiskFindingCard({ findings, notEvaluable }: Props) {
             文脈確認（減点なし）{lows.length} 件
           </div>
           <p className="mt-1 text-xs leading-relaxed text-ink-soft">
-            受診促進・副作用やリスクの説明・患者状態の記述など、問題になりにくい文脈での検出です。
+            受診促進・副作用やリスクの説明・患者状態の記述などの文脈で検出された確認項目です。
             参考として検出箇所のみ記載します。
           </p>
           <ul className="mt-2 space-y-1.5">

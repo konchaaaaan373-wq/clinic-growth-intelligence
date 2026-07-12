@@ -143,7 +143,7 @@ function classifySeverity(expression: string, windowText: string): Severity | nu
   const c = windowText;
 
   if (expression === "必ず") {
-    // 受診促進・安全確認の文脈（問題になりにくく、むしろ推奨される表現）→ 文脈確認（low）
+    // 受診促進・安全確認の文脈（むしろ推奨される表現）→ 文脈確認（low）
     if (
       /必ず[^。]{0,8}(医師|診察|受診|来院|確認|ご相談|相談|検査|指示)/.test(c) ||
       /(診察|医師|専門医)[^。]{0,6}(のうえ|の上|に相談|にご相談|の判断)/.test(c) ||
