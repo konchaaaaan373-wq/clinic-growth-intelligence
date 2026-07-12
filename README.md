@@ -12,18 +12,26 @@
 | --- | --- |
 | **Neco Clinic Report** | プロダクト全体 |
 | **Clinic Report Free** | URLベースの無料診断（本MVPで提供） |
-| **Clinic Report Analytics** | 実データ連携による有料分析（将来提供） |
-| **Clinic Report MMM** | 初診数に対する施策寄与推定機能（Clinic Report Analytics の中核） |
+| **Clinic Report Analytics** | 実データ連携による有料の分析プラットフォーム（将来提供） |
+| **Clinic Report MMM** | 初診数に対する施策寄与推定機能（Clinic Report Analytics 上の最初の分析機能） |
 
 > **重要な前提**
 > 外部URLだけでは、真のマーケティング効果・実際の初診CPA・新患数への寄与・広告費対効果・直接来院を含めた実成果は算出できません。
 > 本サービスは「**効果測定**」ではなく、「**外部から見える集患力診断**」「**MMM準備診断（施策効果測定のための事前監査）**」として設計しています。
 > 無料版では **真の初診CPAや初診寄与は算出・断定しません。**
 
+> 📖 **プロダクト哲学**: 機能追加・コピー作成・スコアリング変更の前に、
+> [**docs/product-philosophy.md**](docs/product-philosophy.md) を必ずお読みください。
+> 「絶対原則（Non-negotiable Principles）」「何であって何でないか」「Freeが主張してはならないこと」
+> 「未入力・取得失敗・医療広告スクリーニングの原則」「スコアの意味論」「コピーライティングのガードレール」を定義しています。
+> フェーズ計画は [docs/roadmap.md](docs/roadmap.md) に分離しています。
+
 ---
 
 ## 目次
 
+- [プロダクト哲学（docs/product-philosophy.md）](docs/product-philosophy.md)
+- [ロードマップ（docs/roadmap.md）](docs/roadmap.md)
 - [事業としての位置づけ](#事業としての位置づけ)
 - [できること / できないこと](#できること--できないこと)
 - [有料版 MMM 構想](#有料版-mmm-構想将来)
@@ -99,7 +107,7 @@ Clinic Report Free の診断結果は、この Clinic Report Analytics に進む
 - **HP集患導線 / SEO・医療コンテンツ / MEO準備度 / SNS集患接続 / 医療広告リスク / MMM準備度** を横断診断
 - **診療科別（内科・整形外科・小児科・皮膚科・耳鼻科・眼科・婦人科・心療内科/精神科・歯科）の症状辞書** に基づき、不足している症状別ページを具体名で指摘
 - 総合スコア（0–100）とランク（A/B/C/D）、スコア内訳を表示
-- 「今すぐ直すべき3点」（なぜ重要か／何を直すか／期待される効果／難易度／優先度）「伸ばせる余地が大きい3点」「チャネル別コメント」を提示
+- 「今すぐ直すべき3点」（なぜ重要か／何を直すか／改善の狙い／難易度／優先度）「伸ばせる余地が大きい3点」「チャネル別コメント」を提示
 - 医療広告上、文脈により確認が望ましい表現の **初期スクリーニング**（違反の断定はしません）
 - 初診数 MMM を始めるために **どのデータが足りないか** を可視化
 - レポートは localStorage 保存・ブラウザ印刷（PDF保存）に対応（PDFの初期ファイル名は診断ごとにユニーク）
@@ -297,7 +305,8 @@ npm run lint       # ESLint
   - `PAGESPEED_API_KEY` 未設定 → `pagespeed.status = "skipped"`
   - `YOUTUBE_API_KEY` 未設定 → `youtube.status = "skipped"`（YouTube URL 入力は「確認済み」として扱う）
 - 外部API が失敗・レート制限・タイムアウトになっても、**診断全体は落とさず** `"failed"` 状態を保持して継続します。
-- **HP URL の取得に失敗しても結果は返ります**（「サイト取得に失敗しましたが、入力情報をもとに可能な範囲で診断しました」と表示）。
+- **HP URL の取得に失敗しても結果は返ります**。ただしサイト品質の低さとしては扱わず、総合スコア・ランクは「評価不能」とし、
+  取得失敗専用の次アクション（URL確認・情報追加・Botブロック確認）を案内します（詳細は [docs/product-philosophy.md](docs/product-philosophy.md) §5）。
 - APIキーや実URLがなくても、`/sample` で診断結果の見え方を確認できます。
 
 ---
@@ -318,6 +327,8 @@ npm run lint       # ESLint
 ---
 
 ## 今後のロードマップ
+
+> 段階計画（Free → CSVベースMMM → API連携）の詳細は [docs/roadmap.md](docs/roadmap.md) を参照してください。
 
 1. **Clinic Report Analytics / Clinic Report MMM の実装**: 日別初診数を目的変数とした時系列モデル、施策別寄与・推定CPA・予算配分提案
 2. **データ連携**: GA4 / Search Console / Google 広告 / YouTube Analytics / Google ビジネスプロフィール
