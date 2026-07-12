@@ -30,11 +30,11 @@ export default function Hero({ onQuickAudit, submitting, error }: Props) {
           {/* ファーストビューの主役: URL入力フォーム */}
           <div className="mt-8 rounded-2xl border border-brand-200 bg-white p-4 shadow-card sm:p-5">
             <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-brand-700">
-              <span>HP URLを入れるだけ</span>
+              <span>HP URLから作成</span>
               <span className="text-slate-300">•</span>
               <span>患者情報は不要</span>
               <span className="text-slate-300">•</span>
-              <span>数十秒でレポート化</span>
+              <span>外部から見える範囲で診断</span>
             </div>
             <QuickUrlAuditForm
               onSubmit={onQuickAudit}

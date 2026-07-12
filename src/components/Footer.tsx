@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { APP_NAME, BRAND } from "../lib/utils";
+import { APP_NAME, BRAND, CONTACT_EMAIL } from "../lib/utils";
 
 export default function Footer() {
   return (
@@ -20,7 +20,7 @@ export default function Footer() {
             <ul className="mt-3 space-y-2 text-sm text-ink-muted">
               <li>
                 <Link to="/audit" className="hover:text-brand-700">
-                  {BRAND.free}を試す
+                  {BRAND.free}を開始
                 </Link>
               </li>
               <li>
@@ -32,6 +32,11 @@ export default function Footer() {
                 <Link to="/about-mmm" className="hover:text-brand-700">
                   MMM（初診数モデリング）とは
                 </Link>
+              </li>
+              <li>
+                <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-brand-700">
+                  お問い合わせ
+                </a>
               </li>
             </ul>
           </div>
@@ -48,8 +53,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-8 border-t border-slate-100 pt-6 text-xs text-ink-soft">
-          © {2026} {APP_NAME}. This is an MVP for external, observational
-          diagnostics only.
+          © 2026 {APP_NAME}
         </div>
       </div>
     </footer>
