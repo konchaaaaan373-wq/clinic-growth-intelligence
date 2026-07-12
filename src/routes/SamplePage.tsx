@@ -10,7 +10,7 @@ export default function SamplePage() {
       <div className="mb-6 no-print">
         <DisclaimerBox tone="neutral">
           これは架空の医療機関「サンプル整形外科クリニック」の {BRAND.free} サンプルレポートです。
-          APIキーや実際のURLがなくても、診断結果の見え方を確認できます。
+          実際のレポートと同じ構成で、診断結果の見え方をご確認いただけます。
           実際に診断するには{" "}
           <Link to="/audit" className="font-medium text-brand-700 hover:underline">
             {BRAND.free}

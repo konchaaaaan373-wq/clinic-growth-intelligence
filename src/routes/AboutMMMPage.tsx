@@ -66,7 +66,7 @@ export default function AboutMMMPage() {
 
         <div className="mt-8 flex flex-wrap gap-3">
           <Link to="/audit" className="btn-primary">
-            {BRAND.free}を試す
+            {BRAND.free}を開始
           </Link>
           <Link to="/sample" className="btn-secondary">
             サンプル結果を見る

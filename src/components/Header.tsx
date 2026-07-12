@@ -50,7 +50,7 @@ export default function Header() {
             </NavLink>
           ))}
           <Link to="/audit" className="btn-primary ml-2 hidden sm:inline-flex">
-            {BRAND.free}を試す
+            {BRAND.free}を開始
           </Link>
         </nav>
       </div>

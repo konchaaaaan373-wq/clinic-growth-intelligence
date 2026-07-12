@@ -27,7 +27,7 @@ export default function ResultsPage() {
           <h1 className="text-xl font-bold text-ink">診断結果が見つかりません</h1>
           <p className="mt-2 text-sm text-ink-muted">
             まだ診断を実行していないか、結果が保存されていない可能性があります。
-            トップページからHP URLを入力するだけで、{BRAND.free} を開始できます。
+            トップページからHP URLを入力すると、{BRAND.free} を開始できます。
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link to="/" className="btn-primary">

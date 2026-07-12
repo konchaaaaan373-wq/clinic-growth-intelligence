@@ -15,25 +15,28 @@ export default function PaidPlanCTA({ clinicName }: Props) {
   const mailto = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-brand-200 bg-gradient-to-br from-brand-700 to-brand-900 p-6 text-white sm:p-8">
-      <h3 className="text-lg font-bold sm:text-xl">実際の初診数で施策効果を見たい場合</h3>
-      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-brand-100">
+    <div className="rounded-xl border border-brand-200 bg-white p-6 shadow-card sm:p-8">
+      <div className="text-xs font-semibold tracking-wide text-brand-700">次のステップ</div>
+      <h3 className="mt-1 text-lg font-bold text-ink sm:text-xl">
+        実際の初診数で施策効果を見たい場合
+      </h3>
+      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-muted">
         {BRAND.free} では、外部から見える集患導線とMMM準備度を評価しています。
         {BRAND.analytics} で日別初診数・広告費・投稿データを連携すると、{BRAND.mmm} により
         HP記事、広告、SNS、ポスティングが初診数にどれだけ寄与したかを推定できます。
       </p>
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <a href={mailto} className="btn-primary bg-white text-brand-800 hover:bg-brand-50">
+        <a href={mailto} className="btn-primary">
           {BRAND.analytics}の相談をする
         </a>
         <a
           href="/about-mmm"
-          className="inline-flex items-center gap-1 text-sm font-medium text-brand-100 underline-offset-2 hover:text-white hover:underline"
+          className="inline-flex items-center gap-1 text-sm font-medium text-brand-700 underline-offset-2 hover:underline"
         >
-          実際の初診数で施策効果を見る →
+          実データ分析の詳細を見る →
         </a>
       </div>
-      <p className="mt-4 text-xs text-brand-200">
+      <p className="mt-4 text-xs text-ink-soft">
         ※ {BRAND.analytics} は将来提供予定の構想です。{BRAND.free} では真の初診CPAや初診寄与は算出しません。
       </p>
     </div>

@@ -9,9 +9,6 @@ import type { AuditInput } from "../lib/types";
 import { requestAudit } from "../lib/api";
 import { BRAND, inferClinicNameFromUrl, saveReport } from "../lib/utils";
 
-// 解析が一瞬で終わってもUX上のローディングを最低限見せる
-const MIN_LOADING_MS = 2600;
-
 const icons = {
   hp: (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -64,13 +61,11 @@ const SAMPLE_SCORES = [
 export default function HomePage() {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleQuickAudit(websiteUrl: string) {
     setSubmitting(true);
     setError(null);
-    setDone(false);
 
     const quickInput: AuditInput = {
       clinicName: inferClinicNameFromUrl(websiteUrl),
@@ -81,17 +76,11 @@ export default function HomePage() {
       source: "quick-url",
     };
 
-    const started = Date.now();
     const result = await requestAudit(quickInput);
-    const elapsed = Date.now() - started;
-    if (elapsed < MIN_LOADING_MS) {
-      await new Promise((r) => setTimeout(r, MIN_LOADING_MS - elapsed));
-    }
-    setDone(true);
 
     if (result.ok) {
       saveReport(result.report);
-      setTimeout(() => navigate("/results", { state: { report: result.report } }), 500);
+      navigate("/results", { state: { report: result.report } });
     } else {
       setSubmitting(false);
       setError(result.error);
@@ -101,7 +90,7 @@ export default function HomePage() {
   if (submitting) {
     return (
       <div className="container-page py-16">
-        <LoadingSteps done={done} />
+        <LoadingSteps />
       </div>
     );
   }
@@ -113,7 +102,7 @@ export default function HomePage() {
       {/* できること */}
       <section className="container-page py-16">
         <div className="max-w-2xl">
-          <h2 className="text-2xl font-bold text-ink">URLを入れるだけで、横断的に診断</h2>
+          <h2 className="text-2xl font-bold text-ink">外部から見える集患導線を、横断的に診断</h2>
           <p className="mt-3 text-ink-muted">
             HP、MEO、SNS、医療広告リスクを外部から観測できる範囲で自動チェック。
             広告出稿の前に、集患の土台がどこで詰まっているかを可視化します。
@@ -138,7 +127,7 @@ export default function HomePage() {
             </span>
             <ul className="mt-4 space-y-3 text-sm text-ink-muted">
               {[
-                "URLを入れるだけで、外部から見える集患上の弱点がわかる",
+                "外部から見える集患導線の改善余地を確認できる",
                 "HP・MEO・SNS・医療広告上の要確認表現を横断して診断できる",
                 "「実際に初診数に効いたか」を測るために、どのデータが足りないかがわかる",
                 `${BRAND.mmm}（初診寄与の推定）への準備度が分かる`,
@@ -224,10 +213,10 @@ export default function HomePage() {
         <div className="mt-8 rounded-xl border border-brand-200 bg-brand-50/50 p-6 sm:p-8">
           <div className="mx-auto max-w-xl text-center">
             <h2 className="text-2xl font-bold text-ink">
-              まずはHP URLだけで、外部集患力を確認
+              まずはHP URLから、外部集患力を確認
             </h2>
             <p className="mt-2 text-sm text-ink-muted">
-              患者情報は不要。数十秒でレポート化します。詳しい情報は後から追加できます。
+              患者情報は不要です。外部情報に基づく初期レポートを作成します。詳しい情報は後から追加できます。
             </p>
           </div>
           <div className="mx-auto mt-6 max-w-xl">

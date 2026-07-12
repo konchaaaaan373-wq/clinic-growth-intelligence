@@ -237,15 +237,17 @@ export default function ReportView({ report, isSample }: Props) {
         <PaidPlanCTA clinicName={report.input.clinicName} />
       </div>
 
-      {/* 生データ（折りたたみ・任意参照） */}
-      <details className="card p-6 no-print">
-        <summary className="cursor-pointer text-sm font-semibold text-ink">
-          解析の生データを表示（技術的な詳細）
-        </summary>
-        <pre className="mt-3 max-h-96 overflow-auto rounded-lg bg-slate-900 p-4 text-xs text-slate-100">
-          {JSON.stringify(report.rawDiagnostics, null, 2)}
-        </pre>
-      </details>
+      {/* 生データ（開発/デバッグ用途。本番UIでは非表示） */}
+      {import.meta.env.DEV && (
+        <details className="card p-6 no-print">
+          <summary className="cursor-pointer text-sm font-semibold text-ink">
+            開発用: 解析の生データを表示
+          </summary>
+          <pre className="mt-3 max-h-96 overflow-auto rounded-lg bg-slate-900 p-4 text-xs text-slate-100">
+            {JSON.stringify(report.rawDiagnostics, null, 2)}
+          </pre>
+        </details>
+      )}
     </div>
   );
 }
