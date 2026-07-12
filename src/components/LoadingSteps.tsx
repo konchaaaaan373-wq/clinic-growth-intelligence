@@ -6,7 +6,7 @@ export default function LoadingSteps() {
           aria-hidden
           className="h-4 w-4 flex-shrink-0 animate-spin rounded-full border-2 border-slate-300 border-t-brand-600"
         />
-        <h2 className="text-lg font-bold text-ink">診断を実行しています…</h2>
+        <h2 className="text-lg font-bold text-ink">レポートを作成しています…</h2>
       </div>
       <p className="mt-2 text-sm leading-relaxed text-ink-soft">
         入力いただいたURLをもとに、外部から取得できる情報（HP構造・予約導線・SEO・SNS接続・

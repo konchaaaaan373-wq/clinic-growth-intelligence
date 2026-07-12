@@ -33,7 +33,7 @@ export default function PaidPlanCTA({ clinicName }: Props) {
           href="/about-mmm"
           className="inline-flex items-center gap-1 text-sm font-medium text-brand-700 underline-offset-2 hover:underline"
         >
-          MMM（初診数モデリング）の詳細を見る →
+          実データ分析の詳細を見る →
         </a>
       </div>
       <p className="mt-4 text-xs text-ink-soft">

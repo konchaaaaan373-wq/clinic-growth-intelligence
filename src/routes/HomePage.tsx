@@ -127,7 +127,7 @@ export default function HomePage() {
             </span>
             <ul className="mt-4 space-y-3 text-sm text-ink-muted">
               {[
-                "HP URLから、外部から見える集患上の弱点を確認できる",
+                "外部から見える集患導線の改善余地を確認できる",
                 "HP・MEO・SNS・医療広告上の要確認表現を横断して診断できる",
                 "「実際に初診数に効いたか」を測るために、どのデータが足りないかがわかる",
                 `${BRAND.mmm}（初診寄与の推定）への準備度が分かる`,
