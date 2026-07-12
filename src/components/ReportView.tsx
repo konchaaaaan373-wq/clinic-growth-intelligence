@@ -66,7 +66,7 @@ export default function ReportView({ report, isSample }: Props) {
           <p className="text-xs font-semibold tracking-wide text-brand-700">
             {BRAND.product}・{BRAND.free}
           </p>
-          <h1 className="text-2xl font-bold text-ink">診断レポート</h1>
+          <h1 className="text-[28px] font-bold leading-snug text-ink">診断レポート</h1>
           <p className="text-sm text-ink-soft">
             {report.input.clinicName}（{metaLabel}）／ 対象URL: {report.input.websiteUrl} ／
             作成日時: {formatDateTime(report.createdAt)}
@@ -103,14 +103,14 @@ export default function ReportView({ report, isSample }: Props) {
 
       {/* 取得失敗の大きな注意（1ページ目・印刷でも表示） */}
       {fetchFailed && (
-        <div className="rounded-xl border-2 border-rose-200 bg-rose-50/70 p-5 break-inside-avoid">
+        <div className="rounded-lg border border-amber-300 bg-amber-50/70 p-5 break-inside-avoid">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="max-w-2xl">
-              <div className="text-base font-bold text-rose-900">サイト取得に失敗しました</div>
-              <p className="mt-1 text-sm font-semibold text-rose-800">
+              <div className="text-base font-bold text-amber-900">サイト取得に失敗しました</div>
+              <p className="mt-1 text-[15px] font-medium text-amber-900">
                 この結果はサイト品質の評価ではありません（評価不能）。
               </p>
-              <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">
+              <p className="mt-1.5 text-[15px] leading-7 text-ink-muted">
                 URLの入力誤り、一時的な通信障害、外部アクセス制限（Botブロック等）の可能性があります。
                 URLを確認して再診断するか、詳細フォームから情報を追加してください。
               </p>
@@ -133,13 +133,13 @@ export default function ReportView({ report, isSample }: Props) {
 
       {/* URLのみ診断の注意（1ページ目・印刷でも表示） */}
       {isUrlOnly && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-5 break-inside-avoid">
+        <div className="rounded-lg border border-amber-200 bg-amber-50/70 p-5 break-inside-avoid">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="max-w-2xl">
-              <div className="text-sm font-bold text-amber-900">
+              <div className="text-[15px] font-bold text-amber-900">
                 このレポートはHP URLのみで作成されています
               </div>
-              <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">
+              <p className="mt-1.5 text-[15px] leading-7 text-ink-muted">
                 診療科・所在地・Googleマップ・SNS URLが未入力のため、SEO・MEO・SNS接続・症状ページ評価の一部は
                 外部から見える範囲での暫定評価です。情報を追加して再診断すると、評価精度が高まります。
               </p>
@@ -152,8 +152,8 @@ export default function ReportView({ report, isSample }: Props) {
       )}
 
       <div className="card p-6 break-inside-avoid">
-        <h3 className="text-base font-bold text-ink">総評（エグゼクティブサマリー）</h3>
-        <p className="mt-2 text-sm leading-relaxed text-ink-muted">{summary.executiveSummary}</p>
+        <h3 className="text-lg font-bold text-ink">総評（エグゼクティブサマリー）</h3>
+        <p className="mt-2.5 text-[15px] leading-7 text-ink-muted">{summary.executiveSummary}</p>
 
         {/* 1ページ目で「何を直すべきか」が分かる要約 */}
         <div className="mt-4 border-t border-slate-100 pt-4">
@@ -162,16 +162,12 @@ export default function ReportView({ report, isSample }: Props) {
           </div>
           <ol className="mt-2 space-y-1.5">
             {report.quickWins.map((q, i) => (
-              <li key={q.id} className="flex items-start gap-2 text-sm">
-                <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-brand-700 text-[11px] font-bold text-white">
+              <li key={q.id} className="flex items-baseline gap-2 text-[15px]">
+                <span className="flex h-5 w-5 flex-shrink-0 translate-y-0.5 items-center justify-center rounded-full bg-brand-700 text-[11px] font-bold text-white">
                   {i + 1}
                 </span>
                 <span className="font-medium text-ink">{q.title}</span>
-                {q.priority && (
-                  <span className="badge border-slate-200 bg-slate-50 text-ink-soft">
-                    優先度 {q.priority}
-                  </span>
-                )}
+                {q.priority && <span className="annotation whitespace-nowrap">優先度 {q.priority}</span>}
               </li>
             ))}
           </ol>
@@ -179,7 +175,7 @@ export default function ReportView({ report, isSample }: Props) {
       </div>
 
       {/* 今すぐ直すべき3点（詳細・アクセント付きで目立たせる） */}
-      <div className="rounded-xl border-2 border-brand-200 bg-brand-50/40 p-1.5 break-inside-avoid">
+      <div className="rounded-lg border border-brand-300 bg-brand-50/30 p-1.5 break-inside-avoid">
         <RecommendationList
           title={fetchFailed ? "次にすべきこと（詳細）" : "今すぐ直すべき3点（詳細）"}
           subtitle={
@@ -194,7 +190,7 @@ export default function ReportView({ report, isSample }: Props) {
 
       {/* ここから詳細（印刷時は改ページして「結論ページ」と分ける） */}
       <div className="print-break-before border-t border-slate-200 pt-6">
-        <h2 className="text-lg font-bold text-ink">詳細レポート</h2>
+        <h2 className="text-xl font-bold text-ink">詳細レポート</h2>
         <p className="mt-1 text-sm text-ink-soft">
           ここからは各領域のスコア内訳・所見・チャネル別コメントの詳細です。
           1ページ目の結論を裏付ける根拠としてご参照ください。
@@ -216,7 +212,7 @@ export default function ReportView({ report, isSample }: Props) {
       </div>
 
       <div>
-        <h3 className="mb-3 text-base font-bold text-ink">チャネル別コメント</h3>
+        <h3 className="mb-3 text-lg font-bold text-ink">チャネル別コメント</h3>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {report.channelComments.map((c) => (
             <ChannelCommentCard key={c.channel} comment={c} />

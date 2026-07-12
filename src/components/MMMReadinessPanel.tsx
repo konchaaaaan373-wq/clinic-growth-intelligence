@@ -10,14 +10,14 @@ export default function MMMReadinessPanel({ readiness }: Props) {
   return (
     <div className="card p-6">
       <div className="flex items-baseline justify-between gap-3">
-        <h3 className="text-base font-bold text-ink">MMM（初診数モデリング）準備度</h3>
+        <h3 className="text-lg font-bold text-ink">MMM（初診数モデリング）準備度</h3>
         <span className="text-sm tabular-nums text-ink-muted">
           <span className="font-bold text-ink">{readiness.readinessScore}</span> / 10
         </span>
       </div>
-      <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+      <div className="bar-track mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
         <div
-          className="h-full rounded-full bg-brand-600"
+          className="bar-fill h-full rounded-full bg-brand-600"
           style={{ width: `${Math.round(ratio * 100)}%` }}
         />
       </div>
@@ -33,7 +33,7 @@ export default function MMMReadinessPanel({ readiness }: Props) {
             )}
             {readiness.availableSignals.map((s, i) => (
               <li key={i} className="flex gap-1.5 text-sm text-ink-muted">
-                <span className="text-emerald-600" aria-hidden>
+                <span className="text-brand-600" aria-hidden>
                   ✓
                 </span>
                 {s}

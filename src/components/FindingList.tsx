@@ -1,10 +1,11 @@
 import type { Finding } from "../lib/types";
 
+// 所見の区分。赤/緑の信号機色は使わず、注意喚起はアンバー、それ以外はネイビー/スレートで示す
 const severityStyle: Record<Finding["severity"], string> = {
-  high: "border-rose-200 bg-rose-50 text-rose-700",
-  medium: "border-amber-200 bg-amber-50 text-amber-700",
-  low: "border-brand-200 bg-brand-50 text-brand-700",
-  info: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  high: "border-amber-300 bg-amber-100 text-amber-900",
+  medium: "border-amber-200 bg-amber-50 text-amber-800",
+  low: "border-slate-200 bg-slate-50 text-ink-muted",
+  info: "border-brand-200 bg-brand-50 text-brand-800",
 };
 
 const severityLabel: Record<Finding["severity"], string> = {
@@ -23,7 +24,7 @@ type Props = {
 export default function FindingList({ title, findings, emptyText }: Props) {
   return (
     <div className="card p-6">
-      <h3 className="text-base font-bold text-ink">{title}</h3>
+      <h3 className="text-lg font-bold text-ink">{title}</h3>
       {findings.length === 0 ? (
         <p className="mt-3 text-sm text-ink-soft">{emptyText ?? "該当する所見はありません。"}</p>
       ) : (

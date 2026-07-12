@@ -90,10 +90,10 @@ export default function ScoreCard({
             <h2 className="mt-2 text-xl font-bold text-ink">サイト取得に失敗（評価不能）</h2>
           ) : (
             <>
-              <h2 className="mt-2 text-xl font-bold text-ink">
+              <h2 className="mt-2 text-2xl font-bold text-ink">
                 {provisional ? "外部集患力スコア（暫定）" : "総合スコア"} {overallScore} 点
               </h2>
-              <p className="mt-1 text-sm font-medium text-ink">
+              <p className="mt-1 text-[15px] text-ink">
                 ランク {grade}：{GRADE_MEANING[grade!]}
               </p>
               {inputCompleteness && (
@@ -105,7 +105,7 @@ export default function ScoreCard({
               )}
             </>
           )}
-          <p className="mt-2 text-sm leading-relaxed text-ink-muted">{oneLineDiagnosis}</p>
+          <p className="mt-2 text-[15px] leading-7 text-ink-muted">{oneLineDiagnosis}</p>
         </div>
       </div>
 
@@ -116,11 +116,11 @@ export default function ScoreCard({
             {GRADE_SCALE.map((s) => (
               <div
                 key={s.g}
-                className={`rounded-lg border px-3 py-2 text-center text-xs ${
+                className={`rounded border px-3 py-2 text-center text-xs ${
                   s.g === grade ? gradeColorClasses(s.g) : "border-slate-200 bg-white text-ink-soft"
                 }`}
               >
-                <div className="text-sm font-bold">{s.g}</div>
+                <div className={`text-sm ${s.g === grade ? "font-bold" : "font-medium"}`}>{s.g}</div>
                 <div className="mt-0.5 tabular-nums">{s.range} 点</div>
               </div>
             ))}

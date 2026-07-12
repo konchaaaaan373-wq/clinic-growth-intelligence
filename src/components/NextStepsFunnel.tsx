@@ -30,15 +30,15 @@ const toneClasses: Record<string, string> = {
   goal: "border-slate-200 bg-white",
 };
 const badgeClasses: Record<string, string> = {
-  current: "bg-brand-700 text-white",
-  next: "bg-amber-100 text-amber-800",
-  goal: "bg-slate-200 text-ink-muted",
+  current: "border-brand-700 bg-brand-700 text-white",
+  next: "border-slate-200 bg-slate-100 text-ink-muted",
+  goal: "border-slate-200 bg-slate-100 text-ink-muted",
 };
 
 export default function NextStepsFunnel() {
   return (
     <div className="card p-6">
-      <h3 className="text-base font-bold text-ink">施策効果を測るまでの3ステップ</h3>
+      <h3 className="text-lg font-bold text-ink">施策効果を測るまでの3ステップ</h3>
       <p className="mt-1 text-sm text-ink-soft">
         無料診断は最初のステップです。実データを連携すると、施策別の初診寄与の推定まで進めます。
       </p>

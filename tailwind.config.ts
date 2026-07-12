@@ -26,13 +26,17 @@ export default {
         },
       },
       fontFamily: {
+        // 日本語ビジネス文書向けスタック。Windows では Meiryo ではなく游ゴシック（Medium優先）を使う
         sans: [
+          "Hiragino Sans",
+          "Hiragino Kaku Gothic ProN",
+          "Yu Gothic Medium",
+          "Yu Gothic",
+          "Noto Sans JP",
           "-apple-system",
           "BlinkMacSystemFont",
           "Segoe UI",
-          "Hiragino Sans",
-          "Hiragino Kaku Gothic ProN",
-          "Meiryo",
+          "system-ui",
           "sans-serif",
         ],
       },
