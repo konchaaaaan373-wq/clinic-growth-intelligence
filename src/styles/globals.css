@@ -53,7 +53,18 @@
 /* 印刷（ブラウザからPDF保存）向け調整 */
 @media print {
   @page {
-    margin: 12mm;
+    margin: 14mm 12mm 18mm;
+    /* ランニングフッター（対応ブラウザのみ。非対応でも何も表示されないだけで壊れない） */
+    @bottom-left {
+      content: "Neco Clinic Report Free — 外部情報に基づく初期レポート";
+      font-size: 8pt;
+      color: #8b93a1;
+    }
+    @bottom-right {
+      content: counter(page) " / " counter(pages);
+      font-size: 8pt;
+      color: #8b93a1;
+    }
   }
   .no-print {
     display: none !important;
@@ -84,7 +95,8 @@
   }
   /* 1ページより高いカード（スコア内訳など）は、カード単位ではなく内部の行単位で分割を避ける。
      カード全体を avoid にすると、直前に大きな空白ページが生まれてしまう */
-  .print-allow-break {
+  .print-allow-break,
+  .print-allow-break .card {
     break-inside: auto !important;
   }
   /* 「詳細レポート」以降は改ページして、1ページ目を結論ページとして独立させる */
@@ -92,6 +104,10 @@
     break-before: page;
     border-top: none !important;
     padding-top: 0 !important;
+  }
+  /* 装飾を変えない単純な改ページ */
+  .print-page-break {
+    break-before: page;
   }
   /* 印刷時は余白を少し詰めて、余白だけのページ・過剰なページ数を抑える */
   .container-page {
