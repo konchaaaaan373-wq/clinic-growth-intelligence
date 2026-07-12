@@ -47,17 +47,36 @@ export default function ReportView({ report, isSample }: Props) {
 
   return (
     <div className="space-y-6 print-full">
-      {/* 印刷（PDF）時のみ表示するブランドヘッダー */}
-      <div className="hidden print:block border-b border-slate-200 pb-3">
-        <div className="text-xs font-semibold tracking-wide text-brand-700">{BRAND.product}</div>
-        <div className="text-lg font-bold text-ink">
+      {/* 印刷（PDF）時のみ表示するタイトルブロック */}
+      <div className="hidden print:block border-b-2 border-brand-800 pb-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <div className="text-sm font-bold tracking-wide text-brand-800">{BRAND.product}</div>
+          <div className="text-[11px] text-ink-soft">外部情報に基づく初期レポート</div>
+        </div>
+        <div className="mt-1.5 text-2xl font-bold leading-snug text-ink">
           {BRAND.free} 診断レポート
           {isSample && "（サンプル）"}
         </div>
-        <div className="mt-0.5 text-xs text-ink-soft">
-          {report.input.clinicName}（{metaLabel}）／ 対象URL: {report.input.websiteUrl} ／
-          作成日時: {formatDateTime(report.createdAt)}
-        </div>
+        <dl className="mt-2.5 space-y-0.5 text-xs text-ink-muted">
+          <div className="flex gap-2">
+            <dt className="w-16 shrink-0 text-ink-soft">医療機関</dt>
+            <dd>
+              {report.input.clinicName}（{metaLabel}）
+            </dd>
+          </div>
+          <div className="flex gap-2">
+            <dt className="w-16 shrink-0 text-ink-soft">対象URL</dt>
+            <dd>{report.input.websiteUrl}</dd>
+          </div>
+          <div className="flex gap-2">
+            <dt className="w-16 shrink-0 text-ink-soft">作成日時</dt>
+            <dd>{formatDateTime(report.createdAt)}</dd>
+          </div>
+        </dl>
+        <p className="mt-2.5 text-[11px] leading-relaxed text-ink-soft">
+          本レポートは、URL・外部から観測できる情報に基づく準備度評価です。
+          実データによる効果測定（初診CPA・施策寄与の算出）は行いません。詳細は末尾の「前提と限界」をご参照ください。
+        </p>
       </div>
 
       {/* ヘッダー行（画面表示用） */}
@@ -91,14 +110,17 @@ export default function ReportView({ report, isSample }: Props) {
         </p>
       </div>
 
+      {/* 画面用の注意書き。印刷では末尾「前提と限界」に集約する */}
       {report.notices.length > 0 && (
-        <DisclaimerBox tone="neutral">
-          <ul className="space-y-1">
-            {report.notices.map((n, i) => (
-              <li key={i}>・{n}</li>
-            ))}
-          </ul>
-        </DisclaimerBox>
+        <div className="no-print">
+          <DisclaimerBox tone="neutral">
+            <ul className="space-y-1">
+              {report.notices.map((n, i) => (
+                <li key={i}>・{n}</li>
+              ))}
+            </ul>
+          </DisclaimerBox>
+        </div>
       )}
 
       {/* 取得失敗の大きな注意（1ページ目・印刷でも表示） */}
@@ -174,8 +196,10 @@ export default function ReportView({ report, isSample }: Props) {
         </div>
       </div>
 
-      {/* 今すぐ直すべき3点（詳細・アクセント付きで目立たせる） */}
-      <div className="rounded-lg border border-brand-300 bg-brand-50/30 p-1.5 break-inside-avoid">
+      {/* 今すぐ直すべき3点（詳細）。印刷では改ページして2ページ目以降に送り、
+          1ページ目を「タイトル・スコア・総評・要約」のエグゼクティブページとして独立させる。
+          ブロック全体の break-inside は禁止せず、項目（li）単位で分割を避ける */}
+      <div className="print-page-break print-allow-break rounded-lg border border-brand-300 bg-brand-50/30 p-1.5">
         <RecommendationList
           title={fetchFailed ? "次にすべきこと（詳細）" : "今すぐ直すべき3点（詳細）"}
           subtitle={
@@ -227,7 +251,22 @@ export default function ReportView({ report, isSample }: Props) {
 
       <MMMReadinessPanel readiness={report.mmmReadiness} />
 
-      <NextStepsFunnel />
+      {/* 印刷時のみ: 分散していた注意書きを1か所に集約した「前提と限界」 */}
+      <div className="hidden print:block break-inside-avoid border-t border-slate-300 pt-4">
+        <h3 className="text-sm font-bold text-ink">前提と限界</h3>
+        <ul className="mt-2 space-y-1 text-[11px] leading-relaxed text-ink-muted">
+          <li>・{BRAND.free} は、外部から観測できる情報に基づく準備度評価であり、効果測定ではありません。</li>
+          <li>
+            ・真の初診CPA・ROI・施策別の初診寄与は算出しません（実データに基づく分析は {BRAND.analytics} の領域です）。
+          </li>
+          <li>・医療広告に関する検出は、人が確認する際の優先度を示す初期スクリーニングであり、法的判断・適合性の保証ではありません。</li>
+          <li>・未入力の情報や取得できなかった項目は「評価不能」として扱っており、品質の低さを意味しません。</li>
+        </ul>
+      </div>
+
+      <div className="no-print">
+        <NextStepsFunnel />
+      </div>
 
       <div className="no-print">
         <PaidPlanCTA clinicName={report.input.clinicName} />

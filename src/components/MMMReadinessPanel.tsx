@@ -8,7 +8,7 @@ type Props = {
 export default function MMMReadinessPanel({ readiness }: Props) {
   const ratio = readiness.readinessScore / 10;
   return (
-    <div className="card p-6">
+    <div className="card print-allow-break p-6">
       <div className="flex items-baseline justify-between gap-3">
         <h3 className="text-lg font-bold text-ink">MMM（初診数モデリング）準備度</h3>
         <span className="text-sm tabular-nums text-ink-muted">
@@ -70,7 +70,7 @@ export default function MMMReadinessPanel({ readiness }: Props) {
         </ol>
       </div>
 
-      <details className="mt-4 rounded-lg border border-slate-200 p-4">
+      <details className="no-print mt-4 rounded-lg border border-slate-200 p-4">
         <summary className="cursor-pointer text-sm font-semibold text-ink">
           MMMを始めるために必要なデータ一覧（全体）
         </summary>

@@ -30,7 +30,7 @@ export default function RiskFindingCard({ findings, notEvaluable }: Props) {
   }
 
   return (
-    <div className="card p-6">
+    <div className="card print-allow-break p-6">
       <div className="flex items-center gap-2">
         <h3 className="text-lg font-bold text-ink">医療広告リスク（初期スクリーニング）</h3>
       </div>
