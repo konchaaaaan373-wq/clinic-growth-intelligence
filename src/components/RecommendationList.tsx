@@ -1,9 +1,9 @@
 import type { Recommendation } from "../lib/types";
 
 const impactLabel: Record<Recommendation["impact"], string> = {
-  high: "効果 大",
-  medium: "効果 中",
-  low: "効果 小",
+  high: "優先度 高",
+  medium: "優先度 中",
+  low: "優先度 低",
 };
 const effortLabel: Record<Recommendation["effort"], string> = {
   low: "着手 容易",
@@ -42,7 +42,7 @@ function StructuredBody({ r }: { r: Recommendation }) {
       )}
       {r.expectedEffect && (
         <p>
-          <span className="font-semibold text-ink">期待される効果：</span>
+          <span className="font-semibold text-ink">改善の見込み：</span>
           <span className="text-ink-muted">{r.expectedEffect}</span>
         </p>
       )}

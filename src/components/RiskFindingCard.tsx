@@ -9,11 +9,11 @@ type Props = {
 const severityMeta: Record<RiskFinding["severity"], { label: string; cls: string }> = {
   high: { label: "優先確認", cls: "border-amber-300 bg-amber-100 text-amber-800" },
   medium: { label: "要確認", cls: "border-amber-200 bg-amber-50 text-amber-700" },
-  low: { label: "低リスク・文脈確認", cls: "border-slate-200 bg-slate-100 text-ink-soft" },
+  low: { label: "文脈確認", cls: "border-slate-200 bg-slate-100 text-ink-soft" },
 };
 
 export default function RiskFindingCard({ findings, notEvaluable }: Props) {
-  // 優先確認・要確認は詳細カードで示し、低リスク（減点なし）は控えめな一覧にとどめる
+  // 優先確認・要確認は詳細カードで示し、文脈確認（減点なし）は控えめな一覧にとどめる
   const primary = findings.filter((f) => f.severity !== "low");
   const lows = findings.filter((f) => f.severity === "low");
 
@@ -36,9 +36,10 @@ export default function RiskFindingCard({ findings, notEvaluable }: Props) {
       </div>
       <p className="mt-1 text-xs leading-relaxed text-ink-soft">
         以下は機械的に抽出した「要確認の可能性がある表現」を、文脈に応じて
-        <span className="font-medium text-ink-muted">優先確認 / 要確認 / 低リスク・文脈確認</span>
-        に分類したものです。違反の断定ではなく、法的判断でもありません。
-        「低リスク・文脈確認」は受診促進・副作用やリスクの説明など、問題になりにくい文脈で、
+        <span className="font-medium text-ink-muted">優先確認 / 要確認 / 文脈確認</span>
+        に分類したものです。この分類は人が確認する際の優先順位を示すもので、
+        違反の断定ではなく、法的判断・法的リスクの評価でもありません。
+        「文脈確認」は受診促進・副作用やリスクの説明など、問題になりにくい文脈で、
         スコアの減点対象にもしていません。
         最終確認は医療広告ガイドラインや専門家確認を前提にしてください。
       </p>
@@ -51,8 +52,8 @@ export default function RiskFindingCard({ findings, notEvaluable }: Props) {
 
       {findings.length > 0 && primary.length === 0 && (
         <p className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
-          高リスク・要確認にあたる表現は検出されませんでした。以下は低リスクの文脈確認のみで、
-          スコアの減点はありません。
+          優先確認・要確認にあたる表現は検出されませんでした。以下は問題になりにくい文脈での検出
+          （文脈確認）のみで、スコアの減点はありません。
         </p>
       )}
 
@@ -92,7 +93,7 @@ export default function RiskFindingCard({ findings, notEvaluable }: Props) {
       {lows.length > 0 && (
         <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50/60 p-4">
           <div className="text-xs font-semibold text-ink-soft">
-            低リスク・文脈確認（減点なし）{lows.length} 件
+            文脈確認（減点なし）{lows.length} 件
           </div>
           <p className="mt-1 text-xs leading-relaxed text-ink-soft">
             受診促進・副作用やリスクの説明・患者状態の記述など、問題になりにくい文脈での検出です。

@@ -67,7 +67,7 @@ export type Recommendation = {
   whyImportant?: string;
   /** 具体的に何を直すか */
   whatToFix?: string;
-  /** 期待される効果（断定はしない） */
+  /** 改善の見込み（定性表現のみ・数値予測や断定はしない） */
   expectedEffect?: string;
   /** 難易度 */
   difficulty?: "低" | "中" | "高";
@@ -99,7 +99,7 @@ export type RiskFinding = {
   expression: string;
   /** 検出箇所の文脈スニペット */
   context: string;
-  /** 文脈を踏まえた確認優先度（low=低リスク・文脈確認 / medium=要確認 / high=優先確認） */
+  /** 文脈を踏まえた確認優先度（low=文脈確認 / medium=要確認 / high=優先確認）。法的リスクの評価ではない */
   severity: "low" | "medium" | "high";
   /** 注意理由（なぜ確認が望ましいか） */
   reason: string;
