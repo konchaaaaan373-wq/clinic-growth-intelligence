@@ -16,7 +16,7 @@ function ScoreRow({ detail }: { detail: ScoreDetail }) {
   return (
     <div className="break-inside-avoid py-4">
       <div className="flex items-baseline justify-between gap-3">
-        <span className="text-sm font-semibold text-ink">{detail.label}</span>
+        <span className="text-[15px] font-medium text-ink">{detail.label}</span>
         {notEvaluable ? (
           <span className="badge border-slate-300 bg-slate-100 text-ink-soft">未評価</span>
         ) : (
@@ -26,7 +26,7 @@ function ScoreRow({ detail }: { detail: ScoreDetail }) {
         )}
       </div>
       {notEvaluable ? (
-        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+        <div className="bar-track mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
           <div
             className="h-full w-full rounded-full"
             style={{
@@ -36,21 +36,21 @@ function ScoreRow({ detail }: { detail: ScoreDetail }) {
           />
         </div>
       ) : (
-        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+        <div className="bar-track mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
           <div
-            className={`h-full rounded-full ${scoreBarColor(ratio)}`}
+            className={`bar-fill h-full rounded-full ${scoreBarColor(ratio)}`}
             style={{ width: `${Math.round(ratio * 100)}%` }}
           />
         </div>
       )}
-      <p className="mt-2 text-xs leading-relaxed text-ink-soft">{detail.explanation}</p>
+      <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">{detail.explanation}</p>
 
       {(detail.positives.length > 0 || detail.negatives.length > 0) && (
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           {detail.positives.length > 0 && (
             <ul className="space-y-1">
               {detail.positives.map((p, i) => (
-                <li key={i} className="flex gap-1.5 text-xs text-emerald-700">
+                <li key={i} className="flex gap-1.5 text-[13px] text-brand-700">
                   <span aria-hidden>✓</span>
                   <span className="text-ink-muted">{p}</span>
                 </li>
@@ -60,7 +60,7 @@ function ScoreRow({ detail }: { detail: ScoreDetail }) {
           {detail.negatives.length > 0 && (
             <ul className="space-y-1">
               {detail.negatives.map((n, i) => (
-                <li key={i} className="flex gap-1.5 text-xs text-amber-700">
+                <li key={i} className="flex gap-1.5 text-[13px] text-amber-600">
                   <span aria-hidden>△</span>
                   <span className="text-ink-muted">{n}</span>
                 </li>
@@ -77,7 +77,7 @@ export default function ScoreBreakdown({ scores }: { scores: Scores }) {
   // カード全体は1ページより高くなるため、印刷時はカード単位ではなく行単位で分割を避ける
   return (
     <div className="card print-allow-break p-6">
-      <h3 className="text-base font-bold text-ink">スコア内訳</h3>
+      <h3 className="text-lg font-bold text-ink">スコア内訳</h3>
       <div className="mt-2 divide-y divide-slate-100">
         {ORDER.map((key) => (
           <ScoreRow key={key} detail={scores[key]} />

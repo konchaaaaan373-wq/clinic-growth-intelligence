@@ -189,9 +189,9 @@ export default function HomePage() {
                       {s.score}/{s.max}
                     </span>
                   </div>
-                  <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                  <div className="bar-track mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100">
                     <div
-                      className="h-full rounded-full bg-brand-500"
+                      className="bar-fill h-full rounded-full bg-brand-600"
                       style={{ width: `${(s.score / s.max) * 100}%` }}
                     />
                   </div>

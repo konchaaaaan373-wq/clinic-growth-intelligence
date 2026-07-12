@@ -182,26 +182,21 @@ export function downloadReportJson(report: AuditReport): void {
   URL.revokeObjectURL(url);
 }
 
-/** グレードに対応する配色クラス */
-export function gradeColorClasses(grade: "A" | "B" | "C" | "D"): string {
-  switch (grade) {
-    case "A":
-      return "bg-emerald-50 text-emerald-700 border-emerald-200";
-    case "B":
-      return "bg-brand-50 text-brand-700 border-brand-200";
-    case "C":
-      return "bg-amber-50 text-amber-700 border-amber-200";
-    case "D":
-      return "bg-rose-50 text-rose-700 border-rose-200";
-  }
+/**
+ * グレードに対応する配色クラス。
+ * ランクは「外部準備度の区分」であり合否ではないため、信号機色（緑/赤）ではなく
+ * ネイビー単色で示す（低スコアを失敗として演出しない）。
+ */
+export function gradeColorClasses(_grade: "A" | "B" | "C" | "D"): string {
+  return "bg-brand-50 text-brand-800 border-brand-300";
 }
 
-/** 0-100 スコアの帯色 */
-export function scoreBarColor(ratio: number): string {
-  if (ratio >= 0.75) return "bg-emerald-500";
-  if (ratio >= 0.5) return "bg-brand-500";
-  if (ratio >= 0.3) return "bg-amber-500";
-  return "bg-rose-500";
+/**
+ * スコアバーの帯色。達成度による色分け（緑/黄/赤）は行わず、
+ * ネイビーの達成量＋スレートの残量で示す。
+ */
+export function scoreBarColor(_ratio: number): string {
+  return "bg-brand-600";
 }
 
 export function formatDateTime(iso: string): string {
