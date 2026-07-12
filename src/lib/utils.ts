@@ -128,19 +128,54 @@ export function loadReport(): AuditReport | null {
   }
 }
 
-/** レポートを JSON ファイルとしてダウンロード */
+/** createdAt(ISO) を YYYYMMDD-HHMM 形式（ローカル時刻）に整形 */
+function formatFileTimestamp(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "unknown";
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(
+    d.getMinutes(),
+  )}`;
+}
+
+/**
+ * レポート保存用のファイル/タイトルベース名を生成する。
+ * 診断ごとにユニークになるよう、日時（分）＋report.idの短縮版を含める。
+ * 環境差を避けるため、半角英数字・ハイフン・アンダースコア・ドット中心にする。
+ *   例: NecoClinicReport_machinaka-cl.com_20260712-0951_ab12cd
+ */
+export function buildReportFileBaseName(report: AuditReport): string {
+  const product = "NecoClinicReport";
+  // 医療機関名は環境差が出やすいため、まず hostname（ASCII中心）を優先
+  const host = (() => {
+    try {
+      return new URL(report.input.websiteUrl.trim()).hostname.toLowerCase().replace(/^www\./, "");
+    } catch {
+      return "";
+    }
+  })();
+  const rawName = host || report.input.clinicName || "clinic";
+  const name =
+    rawName
+      .normalize("NFKD")
+      .replace(/[^A-Za-z0-9._-]+/g, "_")
+      .replace(/_+/g, "_")
+      .replace(/^[._-]+|[._-]+$/g, "")
+      .slice(0, 40) || "clinic";
+  const ts = formatFileTimestamp(report.createdAt);
+  const shortId = (report.id || "").replace(/[^A-Za-z0-9]/g, "").slice(0, 6);
+  return [product, name, ts, shortId].filter(Boolean).join("_");
+}
+
+/** レポートを JSON ファイルとしてダウンロード（開発/デバッグ用途） */
 export function downloadReportJson(report: AuditReport): void {
   const blob = new Blob([JSON.stringify(report, null, 2)], {
     type: "application/json",
   });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  const safeName = (report.input.clinicName || "clinic").replace(
-    /[^\w\-一-龠ぁ-んァ-ヴ]/g,
-    "_",
-  );
   a.href = url;
-  a.download = `cgi-report-${safeName}-${report.id}.json`;
+  a.download = `${buildReportFileBaseName(report)}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

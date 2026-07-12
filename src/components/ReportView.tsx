@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import type { AuditReport } from "../lib/types";
 import {
   formatDateTime,
   downloadReportJson,
+  buildReportFileBaseName,
   BRAND,
   assessInputCompleteness,
   clinicMetaLabel,
@@ -31,6 +33,17 @@ export default function ReportView({ report, isSample }: Props) {
   const metaLabel = clinicMetaLabel(report.input);
   const inputCompleteness = assessInputCompleteness(report.input);
   const reAuditHref = `/audit?websiteUrl=${encodeURIComponent(report.input.websiteUrl)}`;
+  const fileBaseName = buildReportFileBaseName(report);
+
+  // PDF保存（ブラウザ印刷）の初期ファイル名は document.title に依存するため、
+  // レポート表示中はタイトルを診断ごとにユニークな値へ差し替え、離脱時に元へ戻す。
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = fileBaseName;
+    return () => {
+      document.title = prevTitle;
+    };
+  }, [fileBaseName]);
 
   return (
     <div className="space-y-6 print-full">
@@ -61,16 +74,19 @@ export default function ReportView({ report, isSample }: Props) {
           </p>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => window.print()} className="btn-secondary">
-            印刷 / PDF保存
+          <button onClick={() => window.print()} className="btn-primary">
+            PDF保存 / 印刷
           </button>
-          <button onClick={() => downloadReportJson(report)} className="btn-secondary">
-            JSONダウンロード
-          </button>
+          {/* JSONは開発/デバッグ用途。本番UIでは非表示（DEV時のみ表示） */}
+          {import.meta.env.DEV && (
+            <button onClick={() => downloadReportJson(report)} className="btn-secondary">
+              開発用: JSONを保存
+            </button>
+          )}
         </div>
         <p className="w-full text-xs text-ink-soft no-print">
-          ※ PDF保存時は、ブラウザの印刷ダイアログで「ヘッダーとフッター」を<strong>オフ</strong>、
-          「背景グラフィック」を<strong>オン</strong>にすると、日時・URL・ページ番号が入らず
+          ※ PDF保存時は、ブラウザの印刷設定で「ヘッダーとフッター」を<strong>オフ</strong>、
+          「背景グラフィック」を<strong>オン</strong>にしてください。日時・URL・ページ番号が入らず、
           提出用としてきれいに保存できます。
         </p>
       </div>
