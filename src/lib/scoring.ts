@@ -490,7 +490,7 @@ export function calculateSnsConnectionScore(b: DiagnosticsBundle): ScoreDetail {
 }
 
 // =========================================================
-// 5. 医療広告リスクスコア（10点・低リスクほど高得点）
+// 5. 医療広告リスクスコア（10点・要確認表現が少ないほど高得点）
 // =========================================================
 export function calculateMedicalAdRiskScore(riskFindings: RiskFinding[]): ScoreDetail {
   const positives: string[] = [];
@@ -512,31 +512,31 @@ export function calculateMedicalAdRiskScore(riskFindings: RiskFinding[]): ScoreD
   if (total === 0) {
     positives.push("初期スクリーニングでは、注意が必要な表現は検出されませんでした");
   } else if (!hasDeduction) {
-    // low のみ: 受診促進・副作用説明など問題になりにくい文脈のため減点しない
+    // low のみ: 受診促進・副作用説明などの文脈確認のみのため減点しない
     positives.push(
-      `高リスク・要確認にあたる表現は検出されませんでした（低リスクの文脈確認 ${counts.low} 件のみ・減点なし）`,
+      `優先確認・要確認にあたる表現は検出されませんでした（文脈確認 ${counts.low} 件のみ・減点なし）`,
     );
     for (const f of riskFindings) {
       negatives.push(
-        `【文脈確認】「${f.expression}」— 受診促進・副作用説明などの文脈のため減点していません（低リスク）`,
+        `【文脈確認】「${f.expression}」— 受診促進・副作用説明などの文脈のため減点していません`,
       );
     }
   } else {
     const countParts: string[] = [];
     if (counts.high > 0) countParts.push(`優先確認 ${counts.high} 件`);
     if (counts.medium > 0) countParts.push(`要確認 ${counts.medium} 件`);
-    if (counts.low > 0) countParts.push(`文脈確認 ${counts.low} 件（低リスク・減点なし）`);
+    if (counts.low > 0) countParts.push(`文脈確認 ${counts.low} 件（減点なし）`);
     negatives.push(`${countParts.join("・")}（違反の断定ではありません）`);
     const label = (s: RiskFinding["severity"]) => (s === "high" ? "優先確認" : "要確認");
     for (const f of riskFindings) {
       negatives.push(
         f.severity === "low"
-          ? `【文脈確認】「${f.expression}」— 低リスクの文脈のため減点していません`
+          ? `【文脈確認】「${f.expression}」— 文脈確認として記録した項目です（減点なし）`
           : `【${label(f.severity)}】「${f.expression}」— 文脈により確認が望ましい可能性があります`,
       );
     }
     if (counts.high === 0) {
-      positives.push("保証・最上級を断定するような高リスク表現は検出されませんでした");
+      positives.push("保証・最上級を断定するような優先確認にあたる表現は検出されませんでした");
     }
   }
 
@@ -545,7 +545,7 @@ export function calculateMedicalAdRiskScore(riskFindings: RiskFinding[]): ScoreD
     maxScore: 10,
     label: "医療広告リスク",
     explanation:
-      "医療広告ガイドライン上、文脈によっては確認が望ましい表現を機械的に初期スクリーニングし、文脈に応じて優先確認/要確認/文脈確認に分類します。法的判断ではなく、単語検出のみを根拠に違反を断定するものではありません。最終確認は専門家・ガイドラインを前提としてください。",
+      "医療広告ガイドライン上、文脈によっては確認が望ましい表現を機械的に初期スクリーニングし、文脈に応じて優先確認/要確認/文脈確認に分類します。分類は人が確認する際の優先順位であり、法的判断・法的リスクの評価ではなく、単語検出のみを根拠に違反を断定するものではありません。最終確認は専門家・ガイドラインを前提としてください。",
     positives,
     negatives,
   };
