@@ -143,7 +143,7 @@ function classifySeverity(expression: string, windowText: string): Severity | nu
   const c = windowText;
 
   if (expression === "必ず") {
-    // 受診促進・安全確認の文脈（違反リスクは低い、むしろ推奨される表現）
+    // 受診促進・安全確認の文脈（むしろ推奨される表現）→ 文脈確認（low）
     if (
       /必ず[^。]{0,8}(医師|診察|受診|来院|確認|ご相談|相談|検査|指示)/.test(c) ||
       /(診察|医師|専門医)[^。]{0,6}(のうえ|の上|に相談|にご相談|の判断)/.test(c) ||
@@ -163,7 +163,7 @@ function classifySeverity(expression: string, windowText: string): Severity | nu
       return "high";
     }
     // 副作用・リスクの説明や安全管理の文脈（例:「副作用と安全管理」「安全性について」）。
-    // 安全性を保証するのではなく、リスク情報を適切に提供している文脈のため低リスク。
+    // 安全性を保証するのではなく、リスク情報を適切に提供している文脈のため文脈確認（low）。
     if (
       /(副作用|リスク|合併症)[^。]{0,12}安全/.test(c) ||
       /安全(管理|対策|確認|性について|性の確認|性に関する|に配慮|への配慮)/.test(c)
