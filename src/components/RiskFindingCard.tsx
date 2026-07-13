@@ -19,22 +19,16 @@ export default function RiskFindingCard({ findings, notEvaluable }: Props) {
 
   if (notEvaluable) {
     return (
-      <div className="card p-6">
-        <h3 className="text-lg font-bold text-ink">医療広告リスク（初期スクリーニング）</h3>
-        <p className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-ink-muted">
-          サイト本文を取得できなかったため、要確認表現の有無は<strong className="text-ink">評価できません</strong>。
-          「注意表現なし」という意味ではありません。URLを確認して再診断すると評価できます。
-        </p>
-      </div>
+      <p className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-ink-muted">
+        サイト本文を取得できなかったため、要確認表現の有無は<strong className="text-ink">評価できません</strong>。
+        「注意表現なし」という意味ではありません。URLを確認して再診断すると評価できます。
+      </p>
     );
   }
 
   return (
-    <div className="card print-allow-break p-6">
-      <div className="flex items-center gap-2">
-        <h3 className="text-lg font-bold text-ink">医療広告リスク（初期スクリーニング）</h3>
-      </div>
-      <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
+    <div className="print-allow-break">
+      <p className="text-[13px] leading-relaxed text-ink-soft">
         以下は機械的に抽出した「要確認の可能性がある表現」を、文脈に応じて
         <span className="font-medium text-ink-muted">優先確認 / 要確認 / 文脈確認</span>
         に分類したものです。この分類は人が確認する際の優先順位を示すもので、
