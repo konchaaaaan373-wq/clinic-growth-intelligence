@@ -11,6 +11,7 @@ import {
 } from "../lib/utils";
 import { isUrlOnlyAudit } from "../lib/scoring";
 import ScoreCard from "./ScoreCard";
+import ReportSection from "./ReportSection";
 import ScoreBreakdown from "./ScoreBreakdown";
 import FindingList from "./FindingList";
 import RecommendationList from "./RecommendationList";
@@ -46,7 +47,7 @@ export default function ReportView({ report, isSample }: Props) {
   }, [fileBaseName]);
 
   return (
-    <div className="space-y-6 print-full">
+    <div className="space-y-8 print-full">
       {/* 印刷（PDF）時のみ表示するタイトルブロック */}
       <div className="hidden print:block border-b-2 border-brand-800 pb-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -173,14 +174,13 @@ export default function ReportView({ report, isSample }: Props) {
         </div>
       )}
 
-      <div className="card p-6 break-inside-avoid">
-        <h3 className="text-lg font-bold text-ink">総評（エグゼクティブサマリー）</h3>
-        <p className="mt-2.5 text-[15px] leading-7 text-ink-muted">{summary.executiveSummary}</p>
+      {/* 01 総評: エグゼクティブサマリー＋優先対応の要約（印刷1ページ目の結論） */}
+      <ReportSection no="01" title="総評（エグゼクティブサマリー）">
+        <p className="text-[15px] leading-7 text-ink-muted">{summary.executiveSummary}</p>
 
-        {/* 1ページ目で「何を直すべきか」が分かる要約 */}
         <div className="mt-4 border-t border-slate-100 pt-4">
           <div className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
-            {fetchFailed ? "次にすべきこと（3点）" : "今すぐ直すべき3点（要約）"}
+            {fetchFailed ? "次にすべきこと（3点・詳細は 02）" : "今すぐ直すべき3点（要約・詳細は 02）"}
           </div>
           <ol className="mt-2 space-y-1.5">
             {report.quickWins.map((q, i) => (
@@ -194,67 +194,78 @@ export default function ReportView({ report, isSample }: Props) {
             ))}
           </ol>
         </div>
-      </div>
+      </ReportSection>
 
-      {/* 今すぐ直すべき3点（詳細）。印刷では改ページして2ページ目以降に送り、
-          1ページ目を「タイトル・スコア・総評・要約」のエグゼクティブページとして独立させる。
-          ブロック全体の break-inside は禁止せず、項目（li）単位で分割を避ける */}
-      <div className="print-page-break print-allow-break rounded-lg border border-brand-300 bg-brand-50/30 p-1.5">
-        <RecommendationList
-          title={fetchFailed ? "次にすべきこと（詳細）" : "今すぐ直すべき3点（詳細）"}
-          subtitle={
-            fetchFailed
-              ? "サイトを取得できなかったため、まずは再診断・情報追加・アクセス制限の確認を行ってください。"
-              : "優先度が高く着手しやすい改善から着手しましょう。各項目に「なぜ重要か／何を直すか／改善の狙い」を記載しています。"
-          }
-          items={report.quickWins}
-          numbered
-        />
-      </div>
+      {/* 02 優先改善: 01の要約と同じ番号の詳細。印刷では改ページして
+          1ページ目をエグゼクティブページとして独立させる */}
+      <ReportSection
+        no="02"
+        printBreakBefore
+        title={fetchFailed ? "次にすべきこと（詳細）" : "優先改善（今すぐ直すべき3点）"}
+        description={
+          fetchFailed
+            ? "サイトを取得できなかったため、まずは再診断・情報追加・アクセス制限の確認を行ってください。"
+            : "01「総評」の要約と同じ番号の項目です。各項目に「なぜ重要か／何を直すか／改善の狙い」を記載しています。優先度が高く着手しやすい改善から着手しましょう。"
+        }
+      >
+        <RecommendationList items={report.quickWins} numbered />
+      </ReportSection>
 
-      {/* ここから詳細（印刷時は改ページして「結論ページ」と分ける） */}
-      <div className="print-break-before border-t border-slate-200 pt-6">
-        <h2 className="text-xl font-bold text-ink">詳細レポート</h2>
-        <p className="mt-1 text-sm text-ink-soft">
-          ここからは各領域のスコア内訳・所見・チャネル別コメントの詳細です。
-          1ページ目の結論を裏付ける根拠としてご参照ください。
-        </p>
-      </div>
+      {/* 03 スコア内訳 */}
+      <ReportSection
+        no="03"
+        title="スコア内訳（領域別評価）"
+        description="各領域の評価根拠です。✓は確認できた点、△は改善余地・確認事項を示します。"
+      >
+        <ScoreBreakdown scores={scores} />
+      </ReportSection>
 
-      <ScoreBreakdown scores={scores} />
+      {/* 04 所見とチャネル別コメント */}
+      <ReportSection no="04" title="所見とチャネル別コメント">
+        <div className="grid gap-8 lg:grid-cols-2">
+          {report.growthOpportunities.length > 0 && (
+            <div>
+              <h3 className="text-[15px] font-semibold text-ink">伸ばせる余地が大きい3点</h3>
+              <p className="mt-1 text-[13px] text-ink-soft">
+                現状スコアが低く、改善インパクトが大きい領域です。
+              </p>
+              <div className="mt-3">
+                <RecommendationList items={report.growthOpportunities} numbered />
+              </div>
+            </div>
+          )}
+          <div>
+            <h3 className="text-[15px] font-semibold text-ink">主な所見</h3>
+            <div className="mt-3">
+              <FindingList findings={report.findings} />
+            </div>
+          </div>
+        </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {report.growthOpportunities.length > 0 && (
-          <RecommendationList
-            title="伸ばせる余地が大きい3点"
-            subtitle="現状スコアが低く、改善インパクトが大きい領域です。"
-            items={report.growthOpportunities}
-            numbered
-          />
-        )}
-        <FindingList title="主な所見" findings={report.findings} />
-      </div>
-
-      <div>
-        <h3 className="mb-3 text-lg font-bold text-ink">チャネル別コメント</h3>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <h3 className="mt-8 text-[15px] font-semibold text-ink">チャネル別コメント</h3>
+        <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {report.channelComments.map((c) => (
             <ChannelCommentCard key={c.channel} comment={c} />
           ))}
         </div>
-      </div>
+      </ReportSection>
 
-      <RiskFindingCard
-        findings={report.medicalAdRiskFindings}
-        notEvaluable={scores.medicalAdRisk.status === "not_evaluable"}
-      />
+      {/* 05 医療広告スクリーニング */}
+      <ReportSection no="05" title="医療広告スクリーニング（初期スクリーニング）">
+        <RiskFindingCard
+          findings={report.medicalAdRiskFindings}
+          notEvaluable={scores.medicalAdRisk.status === "not_evaluable"}
+        />
+      </ReportSection>
 
-      <MMMReadinessPanel readiness={report.mmmReadiness} />
+      {/* 06 MMM準備度 */}
+      <ReportSection no="06" title="MMM（初診数モデリング）準備度">
+        <MMMReadinessPanel readiness={report.mmmReadiness} />
+      </ReportSection>
 
-      {/* 印刷時のみ: 分散していた注意書きを1か所に集約した「前提と限界」 */}
-      <div className="hidden print:block break-inside-avoid border-t border-slate-300 pt-4">
-        <h3 className="text-sm font-bold text-ink">前提と限界</h3>
-        <ul className="mt-2 space-y-1 text-[11px] leading-relaxed text-ink-muted">
+      {/* 07 前提と限界: 画面・印刷で共通の集約注意書き */}
+      <ReportSection no="07" title="前提と限界">
+        <ul className="break-inside-avoid space-y-1.5 text-[13px] leading-relaxed text-ink-muted">
           <li>・{BRAND.free} は、外部から観測できる情報に基づく準備度評価であり、効果測定ではありません。</li>
           <li>
             ・真の初診CPA・ROI・施策別の初診寄与は算出しません（実データに基づく分析は {BRAND.analytics} の領域です）。
@@ -262,7 +273,7 @@ export default function ReportView({ report, isSample }: Props) {
           <li>・医療広告に関する検出は、人が確認する際の優先度を示す初期スクリーニングであり、法的判断・適合性の保証ではありません。</li>
           <li>・未入力の情報や取得できなかった項目は「評価不能」として扱っており、品質の低さを意味しません。</li>
         </ul>
-      </div>
+      </ReportSection>
 
       <div className="no-print">
         <NextStepsFunnel />

@@ -16,32 +16,26 @@ const severityLabel: Record<Finding["severity"], string> = {
 };
 
 type Props = {
-  title: string;
   findings: Finding[];
   emptyText?: string;
 };
 
-export default function FindingList({ title, findings, emptyText }: Props) {
+/** 所見リスト本体。見出しはセクション側が持つ */
+export default function FindingList({ findings, emptyText }: Props) {
+  if (findings.length === 0) {
+    return <p className="text-sm text-ink-soft">{emptyText ?? "該当する所見はありません。"}</p>;
+  }
   return (
-    <div className="card p-6">
-      <h3 className="text-lg font-bold text-ink">{title}</h3>
-      {findings.length === 0 ? (
-        <p className="mt-3 text-sm text-ink-soft">{emptyText ?? "該当する所見はありません。"}</p>
-      ) : (
-        <ul className="mt-4 space-y-3">
-          {findings.map((f) => (
-            <li key={f.id} className="rounded-lg border border-slate-100 bg-slate-50/60 p-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className={`badge ${severityStyle[f.severity]}`}>
-                  {severityLabel[f.severity]}
-                </span>
-                <span className="text-sm font-semibold text-ink">{f.title}</span>
-              </div>
-              <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">{f.detail}</p>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <ul className="space-y-3">
+      {findings.map((f) => (
+        <li key={f.id} className="rounded-lg border border-slate-100 bg-slate-50/60 p-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`badge ${severityStyle[f.severity]}`}>{severityLabel[f.severity]}</span>
+            <span className="text-sm font-semibold text-ink">{f.title}</span>
+          </div>
+          <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">{f.detail}</p>
+        </li>
+      ))}
+    </ul>
   );
 }

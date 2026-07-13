@@ -73,16 +73,13 @@ function ScoreRow({ detail }: { detail: ScoreDetail }) {
   );
 }
 
+/** スコア内訳の行リスト。見出し・枠はセクション側が持つ。行単位で改ページを避ける */
 export default function ScoreBreakdown({ scores }: { scores: Scores }) {
-  // カード全体は1ページより高くなるため、印刷時はカード単位ではなく行単位で分割を避ける
   return (
-    <div className="card print-allow-break p-6">
-      <h3 className="text-lg font-bold text-ink">スコア内訳</h3>
-      <div className="mt-2 divide-y divide-slate-100">
-        {ORDER.map((key) => (
-          <ScoreRow key={key} detail={scores[key]} />
-        ))}
-      </div>
+    <div className="divide-y divide-slate-100">
+      {ORDER.map((key) => (
+        <ScoreRow key={key} detail={scores[key]} />
+      ))}
     </div>
   );
 }
