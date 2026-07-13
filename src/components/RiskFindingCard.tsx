@@ -146,7 +146,7 @@ export default function RiskFindingCard({ findings, notEvaluable }: Props) {
       {/* 注記（分類の定義と位置づけ） */}
       <ul className="mt-4 break-inside-avoid space-y-1 border-t border-slate-200 pt-3 text-[11px] leading-relaxed text-ink-soft">
         <li>
-          ※ 本表は初期スクリーニングの記録です。分類は人による確認の優先度を示すもので、法的判断ではありません。
+          ※ この一覧は初期スクリーニングの記録です。分類は人による確認の優先度を示すもので、法的判断ではありません。
         </li>
         <li>
           ※ 「文脈確認」は受診促進・副作用やリスクの説明などの文脈で検出された確認項目の記録で、
