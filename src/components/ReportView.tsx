@@ -227,7 +227,7 @@ export default function ReportView({ report, isSample }: Props) {
             <div>
               <h3 className="text-[15px] font-semibold text-ink">伸ばせる余地が大きい3点</h3>
               <p className="mt-1 text-[13px] text-ink-soft">
-                現状スコアが低く、改善インパクトが大きい領域です。
+                現状スコアが低く、改善余地が大きい領域です。
               </p>
               <div className="mt-3">
                 <RecommendationList items={report.growthOpportunities} numbered />
