@@ -34,9 +34,9 @@ export default function Hero() {
             {BRAND.product}｜医療機関向け
           </p>
           <h1 className="mt-3 text-3xl font-bold leading-snug text-ink sm:text-4xl">
-            クリニックの集患力を、
+            外部から見える集患導線を、
             <br className="hidden sm:block" />
-            外部情報から評価するレポート。
+            評価するレポート。
           </h1>
           <p className="mt-5 max-w-xl text-[15px] leading-7 text-ink-muted">
             {BRAND.free} は、HP・SEO・MEO・SNS・医療広告の表現・MMM準備度の6領域を、
