@@ -6,9 +6,9 @@ const impactLabel: Record<Recommendation["impact"], string> = {
   low: "優先度 低",
 };
 const effortLabel: Record<Recommendation["effort"], string> = {
-  low: "着手 容易",
-  medium: "着手 中",
-  high: "着手 重",
+  low: "難易度 低",
+  medium: "難易度 中",
+  high: "難易度 高",
 };
 
 type Props = {

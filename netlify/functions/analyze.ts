@@ -60,7 +60,7 @@ export default async function handler(req: Request): Promise<Response> {
 
   const notices: string[] = [
     "本診断は外部から観測できる情報に基づく初期評価です。実際の初診CPA・初診寄与を断定するものではありません。",
-    "医療広告リスクの検出は初期スクリーニングであり、法的判断ではありません。",
+    "医療広告に関する検出は初期スクリーニングであり、法的判断ではありません。",
   ];
 
   try {
@@ -68,7 +68,7 @@ export default async function handler(req: Request): Promise<Response> {
     const website = await parseWebsite(input.websiteUrl);
     if (website.diagnostics.status === "failed") {
       notices.push(
-        "対象サイトの取得に失敗したため、HP導線・SEO・MEO・医療広告リスクは評価できませんでした（評価不能）。これはサイト品質の評価ではありません。",
+        "対象サイトの取得に失敗したため、HP導線・SEO・MEO・医療広告スクリーニングは評価できませんでした（評価不能）。これはサイト品質の評価ではありません。",
       );
     }
 

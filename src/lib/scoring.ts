@@ -526,7 +526,7 @@ export function calculateMedicalAdRiskScore(riskFindings: RiskFinding[]): ScoreD
     if (counts.high > 0) countParts.push(`優先確認 ${counts.high} 件`);
     if (counts.medium > 0) countParts.push(`要確認 ${counts.medium} 件`);
     if (counts.low > 0) countParts.push(`文脈確認 ${counts.low} 件（減点なし）`);
-    negatives.push(`${countParts.join("・")}（違反の断定ではありません）`);
+    negatives.push(`${countParts.join("・")}（法的判断ではありません）`);
     const label = (s: RiskFinding["severity"]) => (s === "high" ? "優先確認" : "要確認");
     for (const f of riskFindings) {
       negatives.push(
@@ -543,9 +543,9 @@ export function calculateMedicalAdRiskScore(riskFindings: RiskFinding[]): ScoreD
   return {
     score,
     maxScore: 10,
-    label: "医療広告リスク",
+    label: "医療広告スクリーニング",
     explanation:
-      "医療広告ガイドライン上、文脈によっては確認が望ましい表現を機械的に初期スクリーニングし、文脈に応じて優先確認/要確認/文脈確認に分類します。分類は人が確認する際の優先順位であり、法的判断・法的リスクの評価ではなく、単語検出のみを根拠に違反を断定するものではありません。最終確認は専門家・ガイドラインを前提としてください。",
+      "医療広告ガイドライン上、文脈によっては確認が望ましい表現を機械的に初期スクリーニングし、文脈に応じて優先確認/要確認/文脈確認に分類します。分類は人が確認する際の優先順位であり、法的判断や適合性を判定するものではありません。最終確認は専門家・ガイドラインを前提としてください。",
     positives,
     negatives,
   };
@@ -685,7 +685,7 @@ export function buildFetchFailedScores(bundle: DiagnosticsBundle): Scores {
     ),
     snsConnection: calculateSnsConnectionScore(bundle),
     medicalAdRisk: notEvaluableDetail(
-      "医療広告リスク",
+      "医療広告スクリーニング",
       10,
       "サイト本文を取得できなかったため、要確認表現の有無は評価できません。",
     ),
