@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "医療機関向け 無料集患力診断SaaS (MVP) — HP・MEO・SNS・医療広告リスクを外部情報から自動監査し、初診数MMMへの準備度を評価します。",
+  "description": "医療機関向けの無料集患力診断サービス — HP・MEO・SNS・医療広告表現を外部情報から診断し、初診数MMMへの準備度を評価します。",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
