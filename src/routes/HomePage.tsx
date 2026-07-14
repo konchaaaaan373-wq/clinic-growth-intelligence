@@ -1,61 +1,81 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Hero from "../components/Hero";
-import FeatureCard from "../components/FeatureCard";
-import DisclaimerBox from "../components/DisclaimerBox";
 import LoadingSteps from "../components/LoadingSteps";
 import QuickUrlAuditForm from "../components/QuickUrlAuditForm";
 import type { AuditInput } from "../lib/types";
 import { requestAudit } from "../lib/api";
 import { BRAND, inferClinicNameFromUrl, saveReport } from "../lib/utils";
 
-const icons = {
-  hp: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="4" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M3 8h18M8 21h8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  ),
-  map: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 21s7-5.5 7-11a7 7 0 10-14 0c0 5.5 7 11 7 11z" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="12" cy="10" r="2.4" stroke="currentColor" strokeWidth="1.6" />
-    </svg>
-  ),
-  sns: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="6" cy="12" r="2.4" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="17" cy="6" r="2.4" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="17" cy="18" r="2.4" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M8.2 11l6.6-3.6M8.2 13l6.6 3.6" stroke="currentColor" strokeWidth="1.6" />
-    </svg>
-  ),
-  shield: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  ),
-  chart: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  ),
-  search: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M20 20l-3.2-3.2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  ),
-};
+/** 評価フレームワーク（レポートの領域構成と同じ6領域・100点満点） */
+const FRAMEWORK = [
+  {
+    no: "01",
+    label: "HP集患導線",
+    max: 25,
+    description:
+      "予約・電話・LINEなどのCTA、初診案内、診療時間・アクセスといった、来院につながるサイト構成を確認します。",
+  },
+  {
+    no: "02",
+    label: "SEO / 医療コンテンツ",
+    max: 25,
+    description:
+      "title・description・見出しの設計、疾患・症状ページ、内部リンク、構造化データの有無を確認します。",
+  },
+  {
+    no: "03",
+    label: "MEO準備度",
+    max: 15,
+    description:
+      "住所・電話・診療時間・地図リンクなど、Googleビジネスプロフィールを活かすための土台を確認します。",
+  },
+  {
+    no: "04",
+    label: "SNS集患接続",
+    max: 15,
+    description:
+      "YouTube・Instagram・TikTok・LINEの有無と、HP・予約導線への相互接続を確認します。",
+  },
+  {
+    no: "05",
+    label: "医療広告スクリーニング",
+    max: 10,
+    description:
+      "確認が望ましい可能性のある表現を機械的に抽出し、人による確認の優先度で分類します（法的判断ではありません）。",
+  },
+  {
+    no: "06",
+    label: "MMM準備度",
+    max: 10,
+    description:
+      "初診数モデリング（MMM）に必要なデータのうち、何が揃っていて何が足りないかを確認します。",
+  },
+];
 
-const SAMPLE_SCORES = [
-  { label: "HP集患導線", score: 15, max: 25 },
-  { label: "SEO/医療コンテンツ", score: 15, max: 25 },
-  { label: "MEO準備度", score: 10, max: 15 },
-  { label: "SNS集患接続", score: 7, max: 15 },
-  { label: "医療広告リスク", score: 8, max: 10 },
-  { label: "MMM準備度", score: 9, max: 10 },
+/** Free → Analytics → MMM の製品階層 */
+const PRODUCT_STEPS = [
+  {
+    step: "1",
+    name: BRAND.free,
+    tagline: "無料・外部情報にもとづく準備度評価",
+    description:
+      "HP URLと公開情報から、集患導線のどこに改善余地があるかを整理します。効果測定の前に、現在地を確認するためのレポートです。",
+  },
+  {
+    step: "2",
+    name: BRAND.analytics,
+    tagline: "有料・実データにもとづく分析基盤",
+    description:
+      "日別初診数や広告費などの運用データを用いた分析基盤です。施策が実際に効いたかどうかは、こちらの領域で扱います。",
+  },
+  {
+    step: "3",
+    name: BRAND.mmm,
+    tagline: "初診数を軸にしたモデリング",
+    description:
+      "初診数を軸にしたマーケティング・ミックス・モデリングで、どの施策が初診にどれだけ寄与したかを推定します。",
+  },
 ];
 
 export default function HomePage() {
@@ -97,126 +117,110 @@ export default function HomePage() {
 
   return (
     <>
-      <Hero onQuickAudit={handleQuickAudit} submitting={submitting} error={error} />
+      <Hero />
 
-      {/* できること */}
+      {/* 評価フレームワーク */}
       <section className="container-page py-16">
         <div className="max-w-2xl">
-          <h2 className="text-2xl font-bold text-ink">外部から見える集患導線を、横断的に診断</h2>
-          <p className="mt-3 text-ink-muted">
-            HP、MEO、SNS、医療広告リスクを外部から観測できる範囲で自動チェック。
-            広告出稿の前に、集患の土台がどこで詰まっているかを可視化します。
+          <h2 className="text-2xl font-bold text-ink">6領域・100点満点の評価フレームワーク</h2>
+          <p className="mt-3 text-[15px] leading-7 text-ink-muted">
+            外部から観測できる情報を、集患に関わる6つの領域に整理して評価します。
+            各領域の評価根拠と改善余地は、レポート内に明記します。
           </p>
         </div>
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          <FeatureCard icon={icons.hp} title="HP集患導線の診断" description="予約・電話・LINEのCTA、初診案内、診療時間・アクセスなど、来院につながる導線を評価します。" />
-          <FeatureCard icon={icons.search} title="SEO/医療コンテンツ" description="title・description・見出し、疾患/症状ページ、内部リンク、構造化データの有無を確認します。" />
-          <FeatureCard icon={icons.map} title="MEO準備度" description="住所・電話・診療時間・地図リンクなど、Googleビジネスプロフィールを活かす土台を評価します。" />
-          <FeatureCard icon={icons.sns} title="SNS集患接続" description="YouTube/Instagram/TikTok/LINEの有無と、HP・予約への相互接続を確認します。" />
-          <FeatureCard icon={icons.shield} title="医療広告リスクの初期チェック" description="文脈により確認が望ましい表現を機械的にスクリーニングします（違反の断定ではありません）。" />
-          <FeatureCard icon={icons.chart} title="MMM準備度" description="日別初診数の推定モデル（MMM）を始めるために、どのデータが足りないかを可視化します。" />
+
+        <div className="mt-8">
+          <div className="hidden border-b border-slate-300 pb-2 text-[11px] tracking-wide text-ink-soft sm:grid sm:grid-cols-[3rem,13rem,1fr,4.5rem] sm:gap-x-6">
+            <span>No.</span>
+            <span>診断領域</span>
+            <span>主な確認項目</span>
+            <span className="text-right">配点</span>
+          </div>
+          {FRAMEWORK.map((d) => (
+            <div
+              key={d.no}
+              className="grid grid-cols-[auto,1fr,auto] gap-x-2 gap-y-1.5 border-b border-slate-200 py-4 sm:grid-cols-[3rem,13rem,1fr,4.5rem] sm:gap-x-6"
+            >
+              <span className="text-sm font-bold tabular-nums text-brand-700">{d.no}</span>
+              <h3 className="text-[15px] font-semibold text-ink">{d.label}</h3>
+              <span className="text-right text-sm tabular-nums text-ink-muted sm:col-start-4 sm:row-start-1">
+                {d.max}点
+              </span>
+              <p className="col-span-3 text-sm leading-relaxed text-ink-muted sm:col-span-1 sm:col-start-3 sm:row-start-1">
+                {d.description}
+              </p>
+            </div>
+          ))}
+          <div className="flex items-baseline justify-end gap-4 py-3">
+            <span className="text-sm text-ink-soft">合計</span>
+            <span className="text-sm font-semibold tabular-nums text-ink">100点</span>
+          </div>
         </div>
       </section>
 
-      {/* 無料版 / 有料版 */}
+      {/* Free → Analytics → MMM の階層 */}
       <section className="border-y border-slate-200 bg-white py-16">
-        <div className="container-page grid gap-8 lg:grid-cols-2">
-          <div className="card p-6">
-            <span className="badge border-brand-200 bg-brand-50 text-brand-700">
-              {BRAND.free}でわかること
-            </span>
-            <ul className="mt-4 space-y-3 text-sm text-ink-muted">
-              {[
-                "外部から見える集患導線の改善余地を確認できる",
-                "HP・MEO・SNS・医療広告上の要確認表現を横断して診断できる",
-                "「実際に初診数に効いたか」を測るために、どのデータが足りないかがわかる",
-                `${BRAND.mmm}（初診寄与の推定）への準備度が分かる`,
-              ].map((t) => (
-                <li key={t} className="flex gap-2">
-                  <span className="text-brand-600">●</span>
-                  {t}
-                </li>
-              ))}
-            </ul>
+        <div className="container-page">
+          <div className="max-w-2xl">
+            <h2 className="text-2xl font-bold text-ink">現在地の確認から、実データによる分析へ</h2>
+            <p className="mt-3 text-[15px] leading-7 text-ink-muted">
+              {BRAND.free} は、実データにもとづく分析へ進むための最初のステップです。
+              外部から見える範囲の評価と、実データによる効果の分析は、明確に分けて提供します。
+            </p>
           </div>
-          <div className="card p-6">
-            <span className="badge border-slate-200 bg-slate-50 text-ink-muted">
-              {BRAND.analytics}でできること（将来構想）
-            </span>
-            <ul className="mt-4 space-y-3 text-sm text-ink-muted">
-              {[
-                "日別初診数を目的変数にする",
-                "HP記事・広告・YouTube・SNS・ポスティング・MEO・休診日・曜日・祝日・天気などを説明変数にする",
-                `${BRAND.mmm}で、どの施策が初診数にどれだけ寄与したかを推定する`,
-                "施策別の推定CPA、来月の施策提案、予算配分提案を出す",
-              ].map((t) => (
-                <li key={t} className="flex gap-2">
-                  <span className="text-ink-soft">○</span>
-                  {t}
-                </li>
-              ))}
-            </ul>
-            <Link to="/about-mmm" className="mt-5 inline-block text-sm font-medium text-brand-700 hover:underline">
+          <div className="mt-10 grid gap-8 lg:grid-cols-3">
+            {PRODUCT_STEPS.map((p) => (
+              <div key={p.step} className="border-t border-slate-300 pt-4">
+                <div className="flex items-baseline gap-3">
+                  <span className="text-sm font-bold tabular-nums text-brand-700">{p.step}</span>
+                  <h3 className="text-base font-semibold text-ink">{p.name}</h3>
+                </div>
+                <p className="mt-1 text-xs text-ink-soft">{p.tagline}</p>
+                <p className="mt-2.5 text-sm leading-relaxed text-ink-muted">{p.description}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8">
+            <Link
+              to="/about-mmm"
+              className="text-sm font-medium text-brand-700 underline-offset-2 hover:underline"
+            >
               MMM（初診数モデリング）とは →
             </Link>
           </div>
         </div>
       </section>
 
-      {/* 診断スコアの例 */}
+      {/* 前提と限界 */}
       <section className="container-page py-16">
-        <div className="max-w-2xl">
-          <h2 className="text-2xl font-bold text-ink">診断スコアの例</h2>
-          <p className="mt-3 text-ink-muted">
-            総合100点満点で、6つの観点をスコア化します。以下は「サンプル整形外科クリニック」の例です。
-          </p>
+        <div className="border-b border-slate-300 pb-2">
+          <h2 className="text-lg font-bold text-ink">前提と限界</h2>
         </div>
-        <div className="mt-8 grid gap-6 lg:grid-cols-3">
-          <div className="card flex flex-col items-center justify-center p-8 lg:col-span-1">
-            <div className="text-5xl font-bold text-brand-700">64</div>
-            <div className="mt-1 text-sm text-ink-soft">/ 100 ・ ランク B</div>
-            <Link to="/sample" className="btn-secondary mt-5">
-              サンプル結果を見る
-            </Link>
-          </div>
-          <div className="card p-6 lg:col-span-2">
-            <div className="space-y-3">
-              {SAMPLE_SCORES.map((s) => (
-                <div key={s.label}>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-ink">{s.label}</span>
-                    <span className="tabular-nums text-ink-muted">
-                      {s.score}/{s.max}
-                    </span>
-                  </div>
-                  <div className="bar-track mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                    <div
-                      className="bar-fill h-full rounded-full bg-brand-600"
-                      style={{ width: `${(s.score / s.max) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <ul className="mt-4 max-w-3xl space-y-2 text-sm leading-relaxed text-ink-muted">
+          <li>
+            ・{BRAND.free} は、外部から観測できる情報にもとづく準備度評価であり、効果測定ではありません。
+          </li>
+          <li>
+            ・初診CPA・ROI・施策別の初診寄与は、URLの解析からは算出しません（実データにもとづく分析は{" "}
+            {BRAND.analytics} の領域です）。
+          </li>
+          <li>
+            ・医療広告に関する検出は、人による確認の優先度を示す初期スクリーニングであり、法的判断ではありません。
+          </li>
+          <li>
+            ・取得できなかった情報は「評価不能」として扱い、品質の低さとは区別します。患者個人情報は入力しないでください。
+          </li>
+        </ul>
       </section>
 
-      {/* 注意書き + CTA */}
+      {/* CTA */}
       <section className="container-page pb-20">
-        <DisclaimerBox title="ご利用にあたっての前提" tone="warning">
-          外部URLだけでは、真のマーケティング効果、実際の初診CPA、新患数への寄与、広告費対効果、
-          直接来院を含めた実成果は算出できません。本診断は「外部から見える集患力診断」および
-          「MMM準備診断（施策効果測定のための事前監査）」として提供しており、効果を断定するものではありません。
-          患者個人情報は入力しないでください。
-        </DisclaimerBox>
-        <div className="mt-8 rounded-xl border border-brand-200 bg-brand-50/50 p-6 sm:p-8">
+        <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-card sm:p-10">
           <div className="mx-auto max-w-xl text-center">
-            <h2 className="text-2xl font-bold text-ink">
-              まずはHP URLから、外部集患力を確認
-            </h2>
-            <p className="mt-2 text-sm text-ink-muted">
-              患者情報は不要です。外部情報に基づく初期レポートを作成します。詳しい情報は後から追加できます。
+            <h2 className="text-2xl font-bold text-ink">{BRAND.free} をはじめる</h2>
+            <p className="mt-2.5 text-sm leading-relaxed text-ink-muted">
+              HP URLから、外部情報にもとづく初期レポートを作成します。患者情報は不要です。
+              診療科・所在地・SNSなどの情報は、後から追加して評価の精度を高められます。
             </p>
           </div>
           <div className="mx-auto mt-6 max-w-xl">
@@ -231,7 +235,7 @@ export default function HomePage() {
                 to="/audit"
                 className="text-sm font-medium text-brand-700 underline-offset-2 hover:underline"
               >
-                詳しく入力して診断する →
+                詳しい情報を入力して作成する →
               </Link>
             </div>
           </div>
