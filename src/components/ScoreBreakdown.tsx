@@ -45,13 +45,13 @@ function ScoreRow({ detail }: { detail: ScoreDetail }) {
       </div>
       {notEvaluable ? (
         <div className="bar-track mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
-          <div className="h-full w-full rounded-full" style={HATCH_STYLE} />
+          <div className="bar-hatch h-full w-full rounded-full" style={HATCH_STYLE} />
         </div>
       ) : (
         <div className="bar-track relative mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
           {excludedPct > 0 && (
             <div
-              className="absolute inset-y-0 right-0"
+              className="bar-hatch absolute inset-y-0 right-0"
               style={{ width: `${excludedPct}%`, ...HATCH_STYLE }}
               aria-hidden
             />

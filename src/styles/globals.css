@@ -125,9 +125,11 @@
     text-decoration: none !important;
     color: inherit !important;
   }
-  /* スコアバー等の塗りは「背景グラフィック」設定に依存させない（対応ブラウザでは強制印刷） */
+  /* スコアバー等の塗り（未評価分のハッチング含む）は
+     「背景グラフィック」設定に依存させない（対応ブラウザでは強制印刷） */
   .bar-fill,
-  .bar-track {
+  .bar-track,
+  .bar-hatch {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }

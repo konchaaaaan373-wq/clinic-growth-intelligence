@@ -26,7 +26,8 @@ export default function Header() {
               />
             </svg>
           </span>
-          <span className="flex flex-col leading-tight">
+          {/* 320px級の極小幅ではアイコンのみ表示（横スクロールを出さない） */}
+          <span className="hidden flex-col leading-tight min-[360px]:flex">
             <span className="whitespace-nowrap text-sm font-bold text-ink">{APP_NAME}</span>
             <span className="hidden text-[11px] text-ink-soft sm:block">
               クリニックの外部集患力を無料診断
