@@ -1573,6 +1573,8 @@ export function generateQualitativeReview(
         tagline: "どこを切っても隙が少ない優等生",
         description:
           "外から見える導線はどの角度から見ても整っています。ここから先の伸びしろは“見えない部分”—— 実データでの効果測定に進む準備ができています。",
+        nextStep:
+          "日別初診数の記録を始め、実データで“本当に効いている施策”を確かめる段階です。",
       };
     }
     if (unknownCount >= 2) {
@@ -1582,6 +1584,8 @@ export function generateQualitativeReview(
         tagline: "まだ本当の姿を見せていない",
         description:
           "外から見える情報が限られており、実力の全体像はまだ霧の中です。診療科・SNS・GoogleマップURLなどの情報を追加するほど、この診断は本当の姿に近づきます。",
+        nextStep:
+          "診療科・所在地・SNS・GoogleマップURLを追加して再診断すると、診断の解像度が一気に上がります。",
       };
     }
     if (hasBlog && (seo ?? 0) >= 0.6) {
@@ -1591,6 +1595,8 @@ export function generateQualitativeReview(
         tagline: "続ける力は、それ自体が資産",
         description:
           "コラムやお知らせなど、情報発信の習慣が根づいています。発信の継続は一朝一夕に真似できない強みです。あとは発信を予約・来院につなぐ“出口設計”で化けます。",
+        nextStep:
+          "各コラムから症状解説・予約への内部リンクを1本ずつ足し、発信の“出口”を予約につなげましょう。",
       };
     }
     if ((sns ?? 0) >= 0.6 && (hp ?? 1) < 0.6) {
@@ -1600,6 +1606,8 @@ export function generateQualitativeReview(
         tagline: "声は届いている。受け皿を整えたい",
         description:
           "SNSでの発信・接点づくりは動いています。一方でHP側の受け皿（予約導線など）に伸びしろがあり、ここを整えると発信の努力が来院に変わりやすくなります。",
+        nextStep:
+          "まずはHPの予約導線1本から。受け皿が整うと、これまでの発信がそのまま来院に変わり始めます。",
       };
     }
     if ((hp ?? 0) >= 0.7 && (sns === null || sns < 0.5)) {
@@ -1609,6 +1617,8 @@ export function generateQualitativeReview(
         tagline: "来た人を迷わせない、堅実な設計",
         description:
           "HPに来た患者さんを予約・来院まで案内する基本導線が堅実に作られています。認知を広げるチャネル（SNS・発信）を足すと、この導線がもっと活きてきます。",
+        nextStep:
+          "月1本のコラムやGoogleビジネスプロフィールの充実など、認知の入口を1つ増やしてみましょう。",
       };
     }
     if ((meo ?? 0) >= 0.7 && (seo ?? 1) < 0.5) {
@@ -1618,6 +1628,8 @@ export function generateQualitativeReview(
         tagline: "近所の信頼から広げていくタイプ",
         description:
           "地図・アクセスまわりの整備が進んでおり、近隣からの来院を受け止める土台があります。症状解説などの検索コンテンツを足すと、商圏を少し広げられます。",
+        nextStep:
+          "よく診る症状の解説ページを1つ作り、「地域名×症状」で探す患者さんの受け皿を増やしましょう。",
       };
     }
     if (avg < 0.4) {
@@ -1627,6 +1639,8 @@ export function generateQualitativeReview(
         tagline: "整えた分だけ、素直に伸びる",
         description:
           "基本の導線づくりはこれからですが、裏を返せば打ち手がはっきりしている状態です。優先改善の1〜2個を整えるだけでも、外から見える印象は大きく変わります。",
+        nextStep:
+          "「今すぐ直すべき3点」の1番から着手を。小さく直して再診断、の繰り返しが最短ルートです。",
       };
     }
     return {
@@ -1635,6 +1649,8 @@ export function generateQualitativeReview(
       tagline: "全体を少しずつ底上げしていく段階",
       description:
         "大きな穴はないものの、突き抜けた強みもまだ見えていない状態です。いちばん達成率の低い領域から順に育てると、バランスの良さがそのまま強みになります。",
+      nextStep:
+        "達成率がいちばん低い領域を1つ選んで整え、再診断で変化を確かめながら進めましょう。",
     };
   })();
 

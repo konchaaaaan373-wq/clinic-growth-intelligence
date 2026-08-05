@@ -5,7 +5,9 @@ import {
   formatDateTime,
   downloadReportJson,
   buildReportFileBaseName,
+  buildConsultMailto,
   BRAND,
+  CONTACT_EMAIL,
   assessInputCompleteness,
   clinicMetaLabel,
 } from "../lib/utils";
@@ -156,7 +158,13 @@ export default function ReportView({ report, isSample }: Props) {
       />
 
       {/* 集患スタイル診断（質的評価）。点数の隣に置き、「点数がすべてではない」を体現する */}
-      {report.qualitative && <ClinicStyleCard qualitative={report.qualitative} />}
+      {report.qualitative && (
+        <ClinicStyleCard
+          qualitative={report.qualitative}
+          reAuditHref={reAuditHref}
+          consultMailto={buildConsultMailto(report.input.clinicName)}
+        />
+      )}
 
       {/* URLのみ診断の注意（1ページ目・印刷でも表示） */}
       {isUrlOnly && (
@@ -278,6 +286,37 @@ export default function ReportView({ report, isSample }: Props) {
           <li>・未入力の情報や取得できなかった項目は「評価不能」として扱っており、品質の低さを意味しません。</li>
         </ul>
       </ReportSection>
+
+      {/* 印刷（PDF）専用CTA: 配布されたレポート単体でも次の行動と連絡先が分かるようにする。
+          画面では NextStepsFunnel / PaidPlanCTA が同じ役割を担う（no-print のためPDFに載らない） */}
+      <div className="hidden print:block break-inside-avoid rounded-lg border-2 border-brand-200 bg-brand-50/40 p-5">
+        <div className="text-xs font-semibold tracking-wide text-brand-700">
+          このレポートの活かし方（次のステップ）
+        </div>
+        <ol className="mt-2 space-y-1.5 text-[13px] leading-relaxed text-ink">
+          <li>
+            <span className="font-bold text-brand-800">1.</span>{" "}
+            「今すぐ直すべき3点」（01・02）を院内・制作会社と共有し、着手日を決める
+          </li>
+          <li>
+            <span className="font-bold text-brand-800">2.</span>{" "}
+            日別初診数の記録を今日から始める（スプレッドシートで可。施策効果を測る土台になります）
+          </li>
+          <li>
+            <span className="font-bold text-brand-800">3.</span>{" "}
+            改善後にもう一度診断し、スコアと集患スタイルの変化を確認する
+          </li>
+        </ol>
+        <p className="mt-3 border-t border-brand-100 pt-3 text-[13px] leading-relaxed text-ink">
+          実際の初診数に効いた施策を知りたい場合は、{BRAND.analytics}（{BRAND.mmm}）の相談を
+          受け付けています。 お問い合わせ:{" "}
+          <span className="font-semibold text-brand-800">{CONTACT_EMAIL}</span>
+        </p>
+        <p className="mt-1.5 text-[11px] text-ink-soft">
+          ※ {BRAND.analytics} は将来提供予定の構想です。{BRAND.free}{" "}
+          では真の初診CPAや初診寄与は算出しません。
+        </p>
+      </div>
 
       <div className="no-print">
         <NextStepsFunnel />

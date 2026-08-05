@@ -445,6 +445,28 @@ describe("質的評価: 集患スタイル診断", () => {
     expect(q.narrative).toContain("点数には写りません");
   });
 
+  it("スタイルには必ず「次の一手」（CTAの根拠）が付く", () => {
+    const bundles = [
+      perfectBundle(),
+      makeBundle({
+        input: makeInput({ source: "quick-url", specialty: "未指定", location: "未指定" }),
+        websiteText: "",
+      }),
+    ];
+    for (const b of bundles) {
+      const scores: Scores = {
+        websiteConversion: calculateWebsiteConversionScore(b),
+        seoContent: calculateSeoContentScore(b),
+        meoReadiness: calculateMeoReadinessScore(b),
+        snsConnection: calculateSnsConnectionScore(b),
+        medicalAdRisk: calculateMedicalAdRiskScore([], { textAvailable: true }),
+        mmmReadiness: calculateMMMReadinessScore(b),
+      };
+      const q = generateQualitativeReview(scores, b);
+      expect(q.style.nextStep ?? "").not.toBe("");
+    }
+  });
+
   it("全カテゴリ高達成ならオールラウンダー型になる", () => {
     const b = perfectBundle();
     const scores: Scores = {

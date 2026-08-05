@@ -63,6 +63,8 @@ export type ClinicStyleType = {
   tagline: string;
   /** タイプの説明（強み・らしさを含む） */
   description: string;
+  /** このタイプの「次の一手」（行動につながる一文。CTAの根拠になる） */
+  nextStep?: string;
 };
 
 /** 質的評価（数値スコアと独立した講評） */

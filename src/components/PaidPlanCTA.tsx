@@ -1,18 +1,11 @@
-import { CONTACT_EMAIL, BRAND } from "../lib/utils";
+import { BRAND, buildConsultMailto } from "../lib/utils";
 
 type Props = {
   clinicName?: string;
 };
 
 export default function PaidPlanCTA({ clinicName }: Props) {
-  const subject = encodeURIComponent(
-    `${BRAND.analytics} の相談希望${clinicName ? `（${clinicName}）` : ""}`,
-  );
-  const body = encodeURIComponent(
-    `${BRAND.free} を実施しました。${BRAND.analytics}（${BRAND.mmm}）で、実際の初診数に効いた施策の推定について相談を希望します。\n\n` +
-      "・医療機関名:\n・ご担当者名:\n・現在の主な施策:\n・月間初診数の目安:\n",
-  );
-  const mailto = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+  const mailto = buildConsultMailto(clinicName);
 
   return (
     <div className="rounded-xl border border-brand-200 bg-white p-6 shadow-card sm:p-8">
