@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import type { QualitativeReview } from "../lib/types";
 
 type Props = {
@@ -79,9 +80,9 @@ export default function ClinicStyleCard({ qualitative, reAuditHref, consultMailt
           {(reAuditHref || consultMailto) && (
             <div className="no-print mt-3 flex flex-wrap items-center gap-3">
               {reAuditHref && (
-                <a href={reAuditHref} className="btn-secondary text-sm">
+                <Link to={reAuditHref} className="btn-secondary text-sm">
                   情報を追加して再診断する
-                </a>
+                </Link>
               )}
               {consultMailto && (
                 <a

@@ -296,7 +296,9 @@ export default function ReportView({ report, isSample }: Props) {
         <ol className="mt-2 space-y-1.5 text-[13px] leading-relaxed text-ink">
           <li>
             <span className="font-bold text-brand-800">1.</span>{" "}
-            「今すぐ直すべき3点」（01・02）を院内・制作会社と共有し、着手日を決める
+            {fetchFailed
+              ? "「次にすべきこと」（01・02）を確認し、URLの確認・情報の追加を行う"
+              : "「今すぐ直すべき3点」（01・02）を院内・制作会社と共有し、着手日を決める"}
           </li>
           <li>
             <span className="font-bold text-brand-800">2.</span>{" "}
@@ -304,7 +306,9 @@ export default function ReportView({ report, isSample }: Props) {
           </li>
           <li>
             <span className="font-bold text-brand-800">3.</span>{" "}
-            改善後にもう一度診断し、スコアと集患スタイルの変化を確認する
+            {fetchFailed
+              ? "もう一度診断し、スコアと集患スタイルを確認する"
+              : "改善後にもう一度診断し、スコアと集患スタイルの変化を確認する"}
           </li>
         </ol>
         <p className="mt-3 border-t border-brand-100 pt-3 text-[13px] leading-relaxed text-ink">
