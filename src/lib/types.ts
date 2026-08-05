@@ -53,10 +53,30 @@ export type ScoreDetail = {
   status?: "scored" | "not_evaluable";
 };
 
+/**
+ * 集患スタイルのアイコンキー。
+ * UI側でアイコンライブラリ（@phosphor-icons/react）の絵柄に解決する。
+ * ルール: UIにOS依存のデフォルト絵文字は使わない（環境で見た目が変わるため）。
+ */
+export type ClinicStyleIconKey =
+  | "trophy"
+  | "search"
+  | "books"
+  | "megaphone"
+  | "compass"
+  | "town"
+  | "sprout"
+  | "scales";
+
 /** 集患スタイル診断（点数とは独立した、質的なタイプ分け） */
 export type ClinicStyleType = {
-  /** タイプを象徴する絵文字（例: 🏆 🌱 📚） */
-  emoji: string;
+  /** タイプを象徴するアイコン（アイコンライブラリのキー） */
+  icon?: ClinicStyleIconKey;
+  /**
+   * @deprecated 旧レポート（localStorage保存分）互換のための絵文字。
+   * 新規レポートでは設定せず、表示にも使わない（icon を使う）。
+   */
+  emoji?: string;
   /** タイプ名（例: 「コツコツ発信型」） */
   name: string;
   /** ひとことキャッチ */

@@ -5,11 +5,19 @@ type Props = {
   readiness: MMMReadiness;
 };
 
+const MMM_FULL_SCORE = 10;
+const HATCH_STYLE = {
+  backgroundImage:
+    "repeating-linear-gradient(45deg,#e2e8f0,#e2e8f0 4px,#f1f5f9 4px,#f1f5f9 8px)",
+} as const;
+
 export default function MMMReadinessPanel({ readiness }: Props) {
-  // 達成率方式: 分母は「評価できた項目の合計点」。未評価項目は減点しない
-  const max = readiness.readinessMaxScore ?? 10;
+  // 達成率方式: 分母は「評価できた項目の合計点」。未評価項目は減点しない。
+  // バーは満点(10)を全幅とし、未評価分はハッチングで示す（スコア内訳と同じ表現）
+  const max = readiness.readinessMaxScore ?? MMM_FULL_SCORE;
   const notEvaluable = readiness.notEvaluable || max <= 0;
-  const ratio = notEvaluable ? 0 : readiness.readinessScore / max;
+  const fillPct = (readiness.readinessScore / MMM_FULL_SCORE) * 100;
+  const excludedPct = ((MMM_FULL_SCORE - max) / MMM_FULL_SCORE) * 100;
   return (
     <div className="print-allow-break">
       <div className="flex items-baseline justify-between gap-3">
@@ -21,24 +29,30 @@ export default function MMMReadinessPanel({ readiness }: Props) {
         ) : (
           <span className="text-sm tabular-nums text-ink-muted">
             <span className="font-bold text-ink">{readiness.readinessScore}</span> / {max}
+            {max < MMM_FULL_SCORE && (
+              <span className="ml-1.5 text-xs text-ink-soft">
+                （未評価 {MMM_FULL_SCORE - max}点分は除外）
+              </span>
+            )}
           </span>
         )}
       </div>
       {notEvaluable ? (
         <div className="bar-track mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
-          <div
-            className="h-full w-full rounded-full"
-            style={{
-              backgroundImage:
-                "repeating-linear-gradient(45deg,#e2e8f0,#e2e8f0 4px,#f1f5f9 4px,#f1f5f9 8px)",
-            }}
-          />
+          <div className="bar-hatch h-full w-full rounded-full" style={HATCH_STYLE} />
         </div>
       ) : (
-        <div className="bar-track mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+        <div className="bar-track relative mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+          {excludedPct > 0 && (
+            <div
+              className="bar-hatch absolute inset-y-0 right-0"
+              style={{ width: `${excludedPct}%`, ...HATCH_STYLE }}
+              aria-hidden
+            />
+          )}
           <div
-            className="bar-fill h-full rounded-full bg-brand-600"
-            style={{ width: `${Math.round(ratio * 100)}%` }}
+            className="bar-fill absolute inset-y-0 left-0 rounded-full bg-brand-600"
+            style={{ width: `${fillPct}%` }}
           />
         </div>
       )}

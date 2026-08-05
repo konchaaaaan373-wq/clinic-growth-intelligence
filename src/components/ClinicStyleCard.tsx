@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
+import { RocketLaunch, Target, ThumbsUp } from "@phosphor-icons/react";
 import type { QualitativeReview } from "../lib/types";
+import StyleIcon from "./StyleIcon";
 
 type Props = {
   qualitative: QualitativeReview;
@@ -14,6 +16,7 @@ type Props = {
  * 点数と独立した質的評価（タイプ分け＋講評）を、レポートの中で
  * いちばん「読んで楽しい」パートとして見せる。
  * タイプ別の「次の一手」から再診断・相談への行動導線（CTA）につなげる。
+ * アイコンはOS絵文字を使わず、Phosphor（duotone）で統一する。
  */
 export default function ClinicStyleCard({ qualitative, reAuditHref, consultMailto }: Props) {
   const { style, strengths, opportunities, narrative } = qualitative;
@@ -29,10 +32,10 @@ export default function ClinicStyleCard({ qualitative, reAuditHref, consultMailt
 
       <div className="mt-4 flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
         <div
-          className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-5xl"
+          className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-2xl bg-brand-50"
           aria-hidden
         >
-          {style.emoji}
+          <StyleIcon style={style} size={44} className="text-brand-700" />
         </div>
         <div className="text-center sm:text-left">
           <h2 className="text-2xl font-bold text-ink">{style.name}</h2>
@@ -43,7 +46,10 @@ export default function ClinicStyleCard({ qualitative, reAuditHref, consultMailt
 
       <div className="mt-6 grid gap-5 sm:grid-cols-2">
         <div>
-          <h3 className="text-sm font-semibold text-ink">💪 いいところ</h3>
+          <h3 className="flex items-center gap-1.5 text-sm font-semibold text-ink">
+            <ThumbsUp size={16} weight="duotone" className="text-brand-700" aria-hidden />
+            いいところ
+          </h3>
           <ul className="mt-2 space-y-1.5">
             {strengths.map((s, i) => (
               <li key={i} className="flex gap-1.5 text-[14px] leading-relaxed">
@@ -57,7 +63,10 @@ export default function ClinicStyleCard({ qualitative, reAuditHref, consultMailt
         </div>
         {opportunities.length > 0 && (
           <div>
-            <h3 className="text-sm font-semibold text-ink">🎯 もったいないポイント</h3>
+            <h3 className="flex items-center gap-1.5 text-sm font-semibold text-ink">
+              <Target size={16} weight="duotone" className="text-amber-600" aria-hidden />
+              もったいないポイント
+            </h3>
             <ul className="mt-2 space-y-1.5">
               {opportunities.map((o, i) => (
                 <li key={i} className="flex gap-1.5 text-[14px] leading-relaxed">
@@ -75,7 +84,10 @@ export default function ClinicStyleCard({ qualitative, reAuditHref, consultMailt
       {/* タイプ別の次の一手（印刷にも載せる = 配布資料でも行動につながる） */}
       {style.nextStep && (
         <div className="mt-5 rounded-lg border border-brand-100 bg-brand-50/60 p-4 break-inside-avoid">
-          <div className="text-sm font-semibold text-brand-800">🚀 このタイプの次の一手</div>
+          <div className="flex items-center gap-1.5 text-sm font-semibold text-brand-800">
+            <RocketLaunch size={16} weight="duotone" className="text-brand-800" aria-hidden />
+            このタイプの次の一手
+          </div>
           <p className="mt-1 text-[14px] leading-relaxed text-ink-muted">{style.nextStep}</p>
           {(reAuditHref || consultMailto) && (
             <div className="no-print mt-3 flex flex-wrap items-center gap-3">

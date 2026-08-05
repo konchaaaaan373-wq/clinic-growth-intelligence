@@ -126,6 +126,8 @@ export default function HomePage() {
           <p className="mt-3 text-[15px] leading-7 text-ink-muted">
             外部から観測できる情報を、集患に関わる6つの領域に整理して評価します。
             各領域の評価根拠と改善余地は、レポート内に明記します。
+            未入力・取得できなかった項目は減点せず評価対象から除外し、
+            「評価できた項目の達成率」で採点します。
           </p>
         </div>
 
