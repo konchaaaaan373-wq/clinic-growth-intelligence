@@ -20,6 +20,7 @@ import {
   calculateSnsConnectionScore,
   calculateWebsiteConversionScore,
   effectiveRatio,
+  generateChannelComments,
   generateQualitativeReview,
   generateQuickWins,
   gradeFromScore,
@@ -486,6 +487,54 @@ describe("Quick Wins", () => {
     expect(wins.length).toBeGreaterThan(0);
     // URLのみ診断では「情報を追加して再診断」が先頭
     expect(wins[0].id).toBe("qw-add-info");
+  });
+});
+
+// ---------------------------------------------------------
+// 9. 文言が観測事実を超えないこと（レビュー指摘の回帰テスト）
+// ---------------------------------------------------------
+
+describe("文言が観測事実を超えない", () => {
+  it("HP未取得時のSNS未評価文言は「HP内リンクが無い」ことに言及しない", () => {
+    const b = makeBundle({
+      input: makeInput(),
+      website: makeWebsite({ status: "failed" }),
+      websiteText: "",
+    });
+    const d = calculateSnsConnectionScore(b);
+    for (const u of d.unknowns ?? []) {
+      expect(u).not.toContain("HP内からもリンクが見つからない");
+    }
+  });
+
+  it("YouTube APIが成功しても投稿数が取得できない場合は「投稿なし」と断定しない", () => {
+    const b = makeBundle({
+      input: makeInput({ youtubeUrl: "https://youtube.com/@test" }),
+      youtube: { status: "success", videoCount: null },
+    });
+    const d = calculateSnsConnectionScore(b);
+    expect(d.negatives.some((n) => n.includes("動画投稿が確認できませんでした"))).toBe(false);
+    expect((d.unknowns ?? []).some((u) => u.includes("投稿数はAPIから取得できませんでした"))).toBe(
+      true,
+    );
+  });
+
+  it("電話導線があり予約導線が無い場合、HPコメントは「電話CTAが無い」と主張せず、ステータスはgoodにしない", () => {
+    const b = makeBundle({
+      website: makeWebsite({ hasTelLink: true, hasBookingLink: false, hasLineLink: false }),
+    });
+    const scores: Scores = {
+      websiteConversion: calculateWebsiteConversionScore(b),
+      seoContent: calculateSeoContentScore(b),
+      meoReadiness: calculateMeoReadinessScore(b),
+      snsConnection: calculateSnsConnectionScore(b),
+      medicalAdRisk: calculateMedicalAdRiskScore([], { textAvailable: true }),
+      mmmReadiness: calculateMMMReadinessScore(b),
+    };
+    const hp = generateChannelComments(b, scores).find((c) => c.channel === "hp")!;
+    expect(hp.status).not.toBe("good");
+    expect(hp.comment).not.toContain("電話CTAも確認できませんでした");
+    expect(hp.comment).toContain("電話導線は確認できます");
   });
 });
 

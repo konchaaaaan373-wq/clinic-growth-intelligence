@@ -530,7 +530,10 @@ export function calculateSnsConnectionScore(b: DiagnosticsBundle): ScoreDetail {
       ? ok(points, `${label}の運用が確認できます（URL入力またはHP内リンク）`)
       : na(
           points,
-          `${label}は未入力で、HP内からもリンクが見つからないため運用有無は未評価です（運用中ならURL追加で評価できます）`,
+          // HP未取得時は「HP内にリンクが無い」ことも確認できていないため言及しない
+          fetchFailed
+            ? `${label}は未入力のため運用有無は未評価です（運用中ならURL追加で評価できます）`
+            : `${label}は未入力で、HP内からもリンクが見つからないため運用有無は未評価です（運用中ならURL追加で評価できます）`,
         );
 
   const hpLinksToSns =
@@ -558,16 +561,18 @@ export function calculateSnsConnectionScore(b: DiagnosticsBundle): ScoreDetail {
             "HP内からSNSへのリンクが確認できます",
             "入力されたSNSへのHP内リンクが確認できませんでした（相互接続の改善余地）",
           ),
-    // YouTube投稿状況（API連携できた場合のみ評価）
+    // YouTube投稿状況（API連携できて投稿数まで取得できた場合のみ評価）
     !ytKnown
       ? na(2)
       : b.youtube?.status === "success"
-        ? check(
-            2,
-            (b.youtube.videoCount ?? 0) > 0,
-            "YouTube API で動画投稿の存在が確認できました",
-            "YouTube チャンネルは確認できましたが、動画投稿が確認できませんでした",
-          )
+        ? b.youtube.videoCount == null
+          ? na(2, "YouTube の投稿数はAPIから取得できませんでした（チャンネルの存在は確認済み）")
+          : check(
+              2,
+              b.youtube.videoCount > 0,
+              "YouTube API で動画投稿の存在が確認できました",
+              "YouTube チャンネルは確認できましたが、動画投稿が確認できませんでした",
+            )
         : na(2, "YouTube の投稿状況はAPI未連携のため未評価です（チャンネルの存在は確認済み）"),
   ];
 
@@ -1382,7 +1387,10 @@ export function generateChannelComments(b: DiagnosticsBundle, scores: Scores): C
     // 導線は良好・コンテンツ側に伸びしろ
     hpComment = `HP上では${ctaLabel}などの基本導線が確認できます。伸びしろはコンテンツ側にあり、症状別ページ${symptomHint}の拡充が次の一手です。導線自体の実効性は、流入数・予約数・初診数の連携で確認できます。`;
   } else if (!hasBooking) {
-    hpComment = `トップページ上部にWeb予約または電話CTAが見当たりません。広告やSNSから流入しても、初診予約までの導線が弱くなっています。${seoHasRoom && cov.profile ? `あわせて症状別ページ${symptomHint}を増やすと、検索流入の受け皿になります。` : ""}`;
+    // tel: リンクの有無で文言を変える（電話導線があるのに「電話CTAが無い」と主張しない）
+    hpComment = w?.hasTelLink
+      ? `電話導線は確認できますが、Web予約への導線が見当たりません。広告やSNSから流入した患者の受け皿として、Web予約導線の設置が次の一手です。${seoHasRoom && cov.profile ? `あわせて症状別ページ${symptomHint}を増やすと、検索流入の受け皿になります。` : ""}`
+      : `Web予約・電話のいずれのCTAも確認できませんでした。広告やSNSから流入しても、初診予約までの導線が弱くなっています。${seoHasRoom && cov.profile ? `あわせて症状別ページ${symptomHint}を増やすと、検索流入の受け皿になります。` : ""}`;
   } else if (hpScoreish >= 2) {
     // 基本導線はあるが満点ではない: 実際に検出できなかった項目だけを提案する
     const gaps: string[] = [];
@@ -1399,12 +1407,13 @@ export function generateChannelComments(b: DiagnosticsBundle, scores: Scores): C
   comments.push({
     channel: "hp",
     channelLabel: "HP（自院サイト）",
+    // 予約導線が無い場合は「good」にしない（コメントとの矛盾を防ぐ）
     status:
       w?.status === "failed"
         ? "unknown"
-        : wcRatio >= 0.8 || hpScoreish >= 2
+        : wcRatio >= 0.8 || (hpScoreish >= 2 && hasBooking)
           ? "good"
-          : hpScoreish === 1
+          : hpScoreish >= 1
             ? "partial"
             : "weak",
     comment: hpComment,
