@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import DisclaimerBox from "../components/DisclaimerBox";
 import { MMM_REQUIRED_DATA } from "../lib/scoring";
-import { BRAND } from "../lib/utils";
+import { BRAND, buildConsultMailto } from "../lib/utils";
 
 export default function AboutMMMPage() {
   return (
@@ -64,13 +64,19 @@ export default function AboutMMMPage() {
           </DisclaimerBox>
         </div>
 
-        <div className="mt-8 flex flex-wrap gap-3">
+        <div className="mt-8 flex flex-wrap items-center gap-3">
           <Link to="/audit" className="btn-primary">
             {BRAND.free}を開始
           </Link>
           <Link to="/sample" className="btn-secondary">
             サンプル結果を見る
           </Link>
+          <a
+            href={buildConsultMailto()}
+            className="inline-flex items-center gap-1 text-sm font-medium text-brand-700 underline-offset-2 hover:underline"
+          >
+            {BRAND.analytics}について相談する →
+          </a>
         </div>
       </div>
     </div>

@@ -14,10 +14,10 @@ type Props = {
 };
 
 const GRADE_MEANING: Record<"A" | "B" | "C" | "D", string> = {
-  A: "外部から見える集患導線が整っている（80点以上）",
-  B: "基本はできているが改善余地あり（60〜79点）",
-  C: "導線が分断されており整備が必要（40〜59点）",
-  D: "集患導線・情報設計が不足（39点以下）",
+  A: "外から見える導線はバッチリ。次は実データで磨く段階（達成率80%以上）",
+  B: "基本はしっかり。あと少し整えると強い（達成率60〜79%）",
+  C: "整えどき。伸びしろがはっきり見えている状態（達成率40〜59%）",
+  D: "伸びしろ満載。基本の導線づくりから始める段階（達成率39%以下）",
 };
 
 const GRADE_SCALE: { g: "A" | "B" | "C" | "D"; range: string }[] = [
@@ -106,6 +106,12 @@ export default function ScoreCard({
             </>
           )}
           <p className="mt-2 text-[15px] leading-7 text-ink-muted">{oneLineDiagnosis}</p>
+          {!notEvaluable && (
+            <p className="mt-2 text-xs leading-relaxed text-ink-soft">
+              スコアは「評価できた項目の達成率」です。未入力・取得できなかった項目は減点せず分母から除外しています。
+              点数がすべてではありません — 質的な講評もあわせてご覧ください。
+            </p>
+          )}
         </div>
       </div>
 

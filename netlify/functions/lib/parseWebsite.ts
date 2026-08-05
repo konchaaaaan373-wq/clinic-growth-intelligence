@@ -149,6 +149,7 @@ export async function parseWebsite(inputUrl: string): Promise<ParseWebsiteResult
     detectedKeywords: Array.from(agg.detectedKeywords),
     ctaKeywordPages: agg.ctaKeywordPages,
     pageCount: fetchedUrls.length,
+    textLength: combinedText.replace(/\s+/g, "").length,
   };
 
   return { diagnostics, riskFindings, combinedText };

@@ -12,7 +12,12 @@ const ORDER: (keyof Scores)[] = [
 
 function ScoreRow({ detail }: { detail: ScoreDetail }) {
   const notEvaluable = detail.status === "not_evaluable";
-  const ratio = detail.maxScore > 0 ? detail.score / detail.maxScore : 0;
+  // 達成率の分母は「評価できた項目の合計点」。未評価項目は減点せず分母から除外している
+  const evaluableMax = detail.evaluableMaxScore ?? detail.maxScore;
+  const ratio = evaluableMax > 0 ? detail.score / evaluableMax : 0;
+  const excluded = detail.maxScore - evaluableMax;
+  const unknowns = detail.unknowns ?? [];
+
   return (
     <div className="break-inside-avoid py-4">
       <div className="flex items-baseline justify-between gap-3">
@@ -21,7 +26,10 @@ function ScoreRow({ detail }: { detail: ScoreDetail }) {
           <span className="badge border-slate-300 bg-slate-100 text-ink-soft">未評価</span>
         ) : (
           <span className="text-sm tabular-nums text-ink-muted">
-            <span className="font-bold text-ink">{detail.score}</span> / {detail.maxScore}
+            <span className="font-bold text-ink">{detail.score}</span> / {evaluableMax}
+            {excluded > 0 && (
+              <span className="ml-1.5 text-xs text-ink-soft">（未評価 {excluded}点分は除外）</span>
+            )}
           </span>
         )}
       </div>
@@ -68,6 +76,18 @@ function ScoreRow({ detail }: { detail: ScoreDetail }) {
             </ul>
           )}
         </div>
+      )}
+
+      {/* 未評価項目: 「弱い」ではなく「外からは分からない」。減点していないことを明示 */}
+      {unknowns.length > 0 && (
+        <ul className="mt-2 space-y-1">
+          {unknowns.map((u, i) => (
+            <li key={i} className="flex gap-1.5 text-[13px] text-ink-soft">
+              <span aria-hidden>？</span>
+              <span>{u}（減点していません）</span>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

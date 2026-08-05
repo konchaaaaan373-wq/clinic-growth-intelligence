@@ -28,6 +28,21 @@ export const CONTACT_EMAIL =
 const STORAGE_KEY = "cgi:last-report";
 
 /**
+ * 有料版（Clinic Report Analytics）相談用の mailto リンクを生成する。
+ * レポート内の複数CTA（PaidPlanCTA・集患スタイルカード・印刷用CTA）で共通利用。
+ */
+export function buildConsultMailto(clinicName?: string): string {
+  const subject = encodeURIComponent(
+    `${BRAND.analytics} の相談希望${clinicName ? `（${clinicName}）` : ""}`,
+  );
+  const body = encodeURIComponent(
+    `${BRAND.free} を実施しました。${BRAND.analytics}（${BRAND.mmm}）で、実際の初診数に効いた施策の推定について相談を希望します。\n\n` +
+      "・医療機関名:\n・ご担当者名:\n・現在の主な施策:\n・月間初診数の目安:\n",
+  );
+  return `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+}
+
+/**
  * 入力URLの正規化（クイック診断用）。
  * - 前後スペースを trim
  * - http:// / https:// が無ければ https:// を自動補完
