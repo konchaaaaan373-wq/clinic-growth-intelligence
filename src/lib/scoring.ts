@@ -1570,7 +1570,7 @@ export function generateQualitativeReview(
   const style: ClinicStyleType = (() => {
     if (known.length >= 3 && known.every((r) => r >= 0.75)) {
       return {
-        emoji: "🏆",
+        icon: "trophy",
         name: "オールラウンダー型",
         tagline: "どこを切っても隙が少ない優等生",
         description:
@@ -1581,7 +1581,7 @@ export function generateQualitativeReview(
     }
     if (unknownCount >= 2) {
       return {
-        emoji: "🔍",
+        icon: "search",
         name: "未知数ポテンシャル型",
         tagline: "まだ本当の姿を見せていない",
         description:
@@ -1592,7 +1592,7 @@ export function generateQualitativeReview(
     }
     if (hasBlog && (seo ?? 0) >= 0.6) {
       return {
-        emoji: "📚",
+        icon: "books",
         name: "コツコツ発信型",
         tagline: "続ける力は、それ自体が資産",
         description:
@@ -1603,7 +1603,7 @@ export function generateQualitativeReview(
     }
     if ((sns ?? 0) >= 0.6 && (hp ?? 1) < 0.6) {
       return {
-        emoji: "📣",
+        icon: "megaphone",
         name: "発信先行型",
         tagline: "声は届いている。受け皿を整えたい",
         description:
@@ -1614,7 +1614,7 @@ export function generateQualitativeReview(
     }
     if ((hp ?? 0) >= 0.7 && (sns === null || sns < 0.5)) {
       return {
-        emoji: "🧭",
+        icon: "compass",
         name: "導線どっしり職人型",
         tagline: "来た人を迷わせない、堅実な設計",
         description:
@@ -1625,7 +1625,7 @@ export function generateQualitativeReview(
     }
     if ((meo ?? 0) >= 0.7 && (seo ?? 1) < 0.5) {
       return {
-        emoji: "🏘",
+        icon: "town",
         name: "地域密着どっしり型",
         tagline: "近所の信頼から広げていくタイプ",
         description:
@@ -1636,7 +1636,7 @@ export function generateQualitativeReview(
     }
     if (avg < 0.4) {
       return {
-        emoji: "🌱",
+        icon: "sprout",
         name: "伸びしろの塊型",
         tagline: "整えた分だけ、素直に伸びる",
         description:
@@ -1646,7 +1646,7 @@ export function generateQualitativeReview(
       };
     }
     return {
-      emoji: "⚖️",
+      icon: "scales",
       name: "バランス育成型",
       tagline: "全体を少しずつ底上げしていく段階",
       description:
@@ -1689,7 +1689,7 @@ export function generateQualitativeReview(
 
   // ---- 講評 ----
   // style.description はカード上部で表示済みのため、講評では繰り返さない
-  const narrative = `${b.input.clinicName || "貴院"}は「${style.emoji} ${style.name}」タイプと診断しました。${QUALITATIVE_CLOSING}`;
+  const narrative = `${b.input.clinicName || "貴院"}は「${style.name}」タイプと診断しました。${QUALITATIVE_CLOSING}`;
 
   return {
     style,

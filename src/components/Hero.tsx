@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { BRAND } from "../lib/utils";
 import { SAMPLE_REPORT } from "../lib/sampleReport";
 import type { ScoreDetail } from "../lib/types";
+import StyleIcon from "./StyleIcon";
 
 // ヒーローのプレビューはサンプルレポートの実計算値から導出する。
 // スコアリングのルール変更が入っても、ここが古い数値のまま残らない。
@@ -97,8 +98,9 @@ export default function Hero() {
                 / 100{PREVIEW_GRADE ? `・ランク ${PREVIEW_GRADE}` : ""}
               </span>
               {PREVIEW_STYLE && (
-                <span className="ml-auto text-[10px] font-medium text-ink-muted">
-                  {PREVIEW_STYLE.emoji} {PREVIEW_STYLE.name}
+                <span className="ml-auto flex items-center gap-1 text-[10px] font-medium text-ink-muted">
+                  <StyleIcon style={PREVIEW_STYLE} size={12} className="text-brand-700" />
+                  {PREVIEW_STYLE.name}
                 </span>
               )}
             </div>

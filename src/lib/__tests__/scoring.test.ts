@@ -438,7 +438,9 @@ describe("質的評価: 集患スタイル診断", () => {
     };
     const q = generateQualitativeReview(scores, b);
     expect(q.style.name.length).toBeGreaterThan(0);
-    expect(q.style.emoji.length).toBeGreaterThan(0);
+    // ルール: UIはOS絵文字を使わずアイコンキーで表現する
+    expect(q.style.icon).toBeTruthy();
+    expect(q.style.emoji).toBeUndefined();
     expect(q.strengths.length).toBeGreaterThan(0);
     expect(q.narrative).toContain(q.style.name);
     // 「点数がすべてではない」姿勢が講評に含まれる
