@@ -1324,9 +1324,11 @@ export function generateFindings(scores: Scores, b: DiagnosticsBundle): Finding[
     const s = scores[key];
     const ratio = effectiveRatio(s);
     if (ratio === null) continue; // 未評価カテゴリを「課題」として所見化しない
-    const severity: Finding["severity"] =
-      ratio >= 0.75 ? "info" : ratio >= 0.5 ? "low" : ratio >= 0.3 ? "medium" : "high";
     if (s.negatives[0]) {
+      // 改善余地の所見に「良好」バッジ（info）を付けない。
+      // 高達成率でも指摘がある場合は「優先度 低」として一貫させる
+      const severity: Finding["severity"] =
+        ratio >= 0.5 ? "low" : ratio >= 0.3 ? "medium" : "high";
       push(`f-${key}`, cat, severity, `${s.label}: 改善余地`, s.negatives[0]);
     } else if (s.positives[0]) {
       push(`f-${key}`, cat, "info", `${s.label}: 良好`, s.positives[0]);
@@ -1686,7 +1688,8 @@ export function generateQualitativeReview(
   const topOpportunities = opportunities.slice(0, 3);
 
   // ---- 講評 ----
-  const narrative = `${b.input.clinicName || "貴院"}は「${style.emoji} ${style.name}」タイプ。${style.tagline}、という状態です。${style.description} ${QUALITATIVE_CLOSING}`;
+  // style.description はカード上部で表示済みのため、講評では繰り返さない
+  const narrative = `${b.input.clinicName || "貴院"}は「${style.emoji} ${style.name}」タイプ — ${style.tagline}、という状態です。${QUALITATIVE_CLOSING}`;
 
   return {
     style,

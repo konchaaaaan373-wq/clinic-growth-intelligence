@@ -157,15 +157,6 @@ export default function ReportView({ report, isSample }: Props) {
         inputCompleteness={fetchFailed ? undefined : inputCompleteness}
       />
 
-      {/* 集患スタイル診断（質的評価）。点数の隣に置き、「点数がすべてではない」を体現する */}
-      {report.qualitative && (
-        <ClinicStyleCard
-          qualitative={report.qualitative}
-          reAuditHref={reAuditHref}
-          consultMailto={buildConsultMailto(report.input.clinicName)}
-        />
-      )}
-
       {/* URLのみ診断の注意（1ページ目・印刷でも表示） */}
       {isUrlOnly && (
         <div className="rounded-lg border border-amber-200 bg-amber-50/70 p-5 break-inside-avoid">
@@ -208,6 +199,18 @@ export default function ReportView({ report, isSample }: Props) {
         </div>
       </ReportSection>
 
+      {/* 集患スタイル診断（質的評価）。総評の直後に置き、「点数がすべてではない」を体現する。
+          印刷では1ページ目（スコア＋総評の結論ページ）を保つため、専用ページに送る */}
+      {report.qualitative && (
+        <div className="print-page-break">
+          <ClinicStyleCard
+            qualitative={report.qualitative}
+            reAuditHref={reAuditHref}
+            consultMailto={buildConsultMailto(report.input.clinicName)}
+          />
+        </div>
+      )}
+
       {/* 02 優先改善: 01の要約と同じ番号の詳細。印刷では改ページして
           1ページ目をエグゼクティブページとして独立させる */}
       <ReportSection
@@ -227,7 +230,7 @@ export default function ReportView({ report, isSample }: Props) {
       <ReportSection
         no="03"
         title="スコア内訳（領域別評価）"
-        description="各領域の評価根拠です。✓は確認できた点、△は改善余地・確認事項を示します。"
+        description="各領域の評価根拠です。✓は確認できた点、△は改善余地・確認事項、？は未評価（減点せず達成率の分母から除外）を示します。"
       >
         <ScoreBreakdown scores={scores} />
       </ReportSection>

@@ -1,15 +1,22 @@
 import { Link } from "react-router-dom";
 import { BRAND } from "../lib/utils";
+import { SAMPLE_REPORT } from "../lib/sampleReport";
+import type { ScoreDetail } from "../lib/types";
 
-/** ヒーローのレポートプレビューに表示する領域別スコア（サンプルレポートと同じ値） */
-const PREVIEW_SCORES = [
-  { label: "HP集患導線", score: 15, max: 25 },
-  { label: "SEO/医療コンテンツ", score: 15, max: 25 },
-  { label: "MEO準備度", score: 10, max: 15 },
-  { label: "SNS集患接続", score: 7, max: 15 },
-  { label: "医療広告スクリーニング", score: 8, max: 10 },
-  { label: "MMM準備度", score: 9, max: 10 },
+// ヒーローのプレビューはサンプルレポートの実計算値から導出する。
+// スコアリングのルール変更が入っても、ここが古い数値のまま残らない。
+const s = SAMPLE_REPORT.scores;
+const PREVIEW_SCORES: { label: string; d: ScoreDetail }[] = [
+  { label: "HP集患導線", d: s.websiteConversion },
+  { label: "SEO/医療コンテンツ", d: s.seoContent },
+  { label: "MEO準備度", d: s.meoReadiness },
+  { label: "SNS集患接続", d: s.snsConnection },
+  { label: "医療広告スクリーニング", d: s.medicalAdRisk },
+  { label: "MMM準備度", d: s.mmmReadiness },
 ];
+const PREVIEW_OVERALL = SAMPLE_REPORT.summary.overallScore;
+const PREVIEW_GRADE = SAMPLE_REPORT.summary.grade;
+const PREVIEW_STYLE = SAMPLE_REPORT.qualitative?.style;
 
 /** プレビューに示すレポートの章構成（実際のレポートと同じ番号・見出し） */
 const PREVIEW_SECTIONS = [
@@ -83,26 +90,38 @@ export default function Hero() {
               <span className="text-[11px] font-bold text-ink">総評（エグゼクティブサマリー）</span>
             </div>
             <div className="mt-2 flex items-baseline gap-1.5">
-              <span className="text-2xl font-bold leading-none text-brand-700">64</span>
-              <span className="text-[10px] text-ink-soft">/ 100・ランク B</span>
+              <span className="text-2xl font-bold leading-none text-brand-700">
+                {PREVIEW_OVERALL ?? "—"}
+              </span>
+              <span className="text-[10px] text-ink-soft">
+                / 100{PREVIEW_GRADE ? `・ランク ${PREVIEW_GRADE}` : ""}
+              </span>
+              {PREVIEW_STYLE && (
+                <span className="ml-auto text-[10px] font-medium text-ink-muted">
+                  {PREVIEW_STYLE.emoji} {PREVIEW_STYLE.name}
+                </span>
+              )}
             </div>
             <div className="mt-2.5 space-y-1.5">
-              {PREVIEW_SCORES.map((s) => (
-                <div key={s.label} className="flex items-center gap-2">
-                  <span className="w-32 shrink-0 truncate text-[10px] text-ink-muted">
-                    {s.label}
-                  </span>
-                  <span className="h-1 flex-1 overflow-hidden rounded-full bg-slate-100">
-                    <span
-                      className="block h-full rounded-full bg-brand-600"
-                      style={{ width: `${(s.score / s.max) * 100}%` }}
-                    />
-                  </span>
-                  <span className="w-9 shrink-0 text-right text-[10px] tabular-nums text-ink-soft">
-                    {s.score}/{s.max}
-                  </span>
-                </div>
-              ))}
+              {PREVIEW_SCORES.map(({ label, d }) => {
+                const evalMax = d.evaluableMaxScore ?? d.maxScore;
+                return (
+                  <div key={label} className="flex items-center gap-2">
+                    <span className="w-32 shrink-0 truncate text-[10px] text-ink-muted">
+                      {label}
+                    </span>
+                    <span className="h-1 flex-1 overflow-hidden rounded-full bg-slate-100">
+                      <span
+                        className="block h-full rounded-full bg-brand-600"
+                        style={{ width: `${(d.score / d.maxScore) * 100}%` }}
+                      />
+                    </span>
+                    <span className="w-9 shrink-0 text-right text-[10px] tabular-nums text-ink-soft">
+                      {d.score}/{evalMax}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
 
             <div className="mt-3.5 space-y-1 border-t border-slate-100 pt-2.5">
