@@ -138,9 +138,42 @@ const BASE_SEVERITY: Record<string, Severity> = {
  * - 「必ず診察/医師/受診/確認」など安全確認・受診促進文脈の「必ず」は low（または除外）
  * - 「安全に◯◯できた/摂れた」など患者状態の記述の「安全」は low
  * - 「絶対安全/安全です/安全性を保証」など保証表現の「安全」は high
+ * - 「最新のお知らせ」などナビゲーション文言の「最新」は除外
+ * - 「Googleの口コミ」「口コミを投稿」など口コミ導線の「口コミ」は low
+ * - 「土曜限定診療」など診療案内文脈の「限定」は low
  */
 function classifySeverity(expression: string, windowText: string): Severity | null {
   const c = windowText;
+
+  if (expression === "最新") {
+    // ナビゲーション・更新情報の定型文言（広告表現ではない）→ 除外
+    if (/最新(の)?(お知らせ|情報|ニュース|記事|コラム|ブログ|投稿|一覧|更新)/.test(c)) {
+      return null;
+    }
+    return "medium";
+  }
+
+  if (expression === "口コミ") {
+    // 口コミサイトへの案内・投稿依頼などの導線文言 → 文脈確認（low）
+    if (
+      /(google|グーグル|マップ|map)[^。]{0,12}口コミ/i.test(c) ||
+      /口コミ[^。]{0,8}(投稿|を書く|募集|はこちら|サイト|一覧)/.test(c)
+    ) {
+      return "low";
+    }
+    return "medium";
+  }
+
+  if (expression === "限定") {
+    // 曜日・時間帯など診療体制の案内文脈 → 文脈確認（low）
+    if (
+      /(月|火|水|木|金|土|日|曜|平日|週末|午前|午後|夜間|時間帯?)[^。]{0,6}限定/.test(c) ||
+      /限定[^。]{0,4}(診療|外来|受付|健診|検診)/.test(c)
+    ) {
+      return "low";
+    }
+    return "medium";
+  }
 
   if (expression === "必ず") {
     // 受診促進・安全確認の文脈（むしろ推奨される表現）→ 文脈確認（low）

@@ -11,6 +11,7 @@ import {
 } from "../lib/utils";
 import { isUrlOnlyAudit } from "../lib/scoring";
 import ScoreCard from "./ScoreCard";
+import ClinicStyleCard from "./ClinicStyleCard";
 import ReportSection from "./ReportSection";
 import ScoreBreakdown from "./ScoreBreakdown";
 import FindingList from "./FindingList";
@@ -153,6 +154,9 @@ export default function ReportView({ report, isSample }: Props) {
         provisional={isUrlOnly}
         inputCompleteness={fetchFailed ? undefined : inputCompleteness}
       />
+
+      {/* 集患スタイル診断（質的評価）。点数の隣に置き、「点数がすべてではない」を体現する */}
+      {report.qualitative && <ClinicStyleCard qualitative={report.qualitative} />}
 
       {/* URLのみ診断の注意（1ページ目・印刷でも表示） */}
       {isUrlOnly && (

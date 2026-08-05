@@ -28,17 +28,52 @@ export type AuditInput = {
 /** 各スコアカテゴリの詳細 */
 export type ScoreDetail = {
   score: number;
+  /** カテゴリの設計上の満点（総合スコアの重みとしても使う） */
   maxScore: number;
+  /**
+   * 実際に評価できた項目の合計点（達成率の分母）。
+   * 未入力・取得不能などで評価できなかった項目は、減点せずここから除外する。
+   * 省略時は maxScore と同じとみなす（後方互換）。
+   */
+  evaluableMaxScore?: number;
   label: string;
   explanation: string;
   positives: string[];
   negatives: string[];
+  /**
+   * 評価対象から除外した項目（未入力・取得不能など）。
+   * 「弱い」のではなく「外からは分からない」項目。減点しない。
+   */
+  unknowns?: string[];
   /**
    * このカテゴリを評価できたか。
    * "scored"（既定）= 通常評価 / "not_evaluable" = 取得失敗等で評価不能（スコアは参考外）。
    * 省略時は "scored" とみなす。
    */
   status?: "scored" | "not_evaluable";
+};
+
+/** 集患スタイル診断（点数とは独立した、質的なタイプ分け） */
+export type ClinicStyleType = {
+  /** タイプを象徴する絵文字（例: 🏆 🌱 📚） */
+  emoji: string;
+  /** タイプ名（例: 「コツコツ発信型」） */
+  name: string;
+  /** ひとことキャッチ */
+  tagline: string;
+  /** タイプの説明（強み・らしさを含む） */
+  description: string;
+};
+
+/** 質的評価（数値スコアと独立した講評） */
+export type QualitativeReview = {
+  style: ClinicStyleType;
+  /** 数値に依らない良いところ */
+  strengths: string[];
+  /** もったいないポイント（伸びしろ） */
+  opportunities: string[];
+  /** 質的な総評（点数がすべてではない旨を含む） */
+  narrative: string;
 };
 
 /** 診断で検出した所見（良い点・課題点の両方を含む） */
@@ -112,6 +147,10 @@ export type RiskFinding = {
 /** MMM 準備度の詳細 */
 export type MMMReadiness = {
   readinessScore: number;
+  /** 評価できた項目の合計点（達成率の分母）。省略時は 10 */
+  readinessMaxScore?: number;
+  /** 全項目が未評価（URLのみ診断等）でスコアを出せないか */
+  notEvaluable?: boolean;
   availableSignals: string[];
   missingData: string[];
   nextDataToCollect: string[];
@@ -147,6 +186,8 @@ export type WebsiteDiagnostics = {
   detectedKeywords: string[];
   ctaKeywordPages: number;
   pageCount: number;
+  /** 抽出できた本文テキストの総文字数。極端に少ない場合はJS描画サイトの可能性 */
+  textLength?: number;
   errorMessage?: string;
 };
 
@@ -201,6 +242,8 @@ export type AuditReport = {
     siteFetchFailed: boolean;
   };
   scores: Scores;
+  /** 集患スタイル診断＋質的講評（取得失敗時は省略） */
+  qualitative?: QualitativeReview;
   findings: Finding[];
   quickWins: Recommendation[];
   /** 伸ばせる余地が大きい領域の提案（達成率の低いカテゴリ由来） */

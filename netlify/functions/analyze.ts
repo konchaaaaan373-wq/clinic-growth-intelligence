@@ -22,9 +22,11 @@ import {
   generateGrowthOpportunities,
   generateFindings,
   generateChannelComments,
+  generateQualitativeReview,
   buildFetchFailedScores,
   generateFetchFailedQuickWins,
   generateFetchFailedFindings,
+  isTextThin,
   FETCH_FAILED_ONE_LINE,
   FETCH_FAILED_SUMMARY,
 } from "../../src/lib/scoring";
@@ -95,6 +97,13 @@ export default async function handler(req: Request): Promise<Response> {
 
     const siteFetchFailed = website.diagnostics.status === "failed";
 
+    // 本文がほとんど取得できないサイト（JS描画等）: キーワード系評価は未評価扱いになる
+    if (!siteFetchFailed && isTextThin(bundle)) {
+      notices.push(
+        "サイトの本文テキストがほとんど取得できませんでした（JavaScriptで描画されるサイトの可能性があります）。本文に基づく項目は未評価とし、総合スコアには含めていません。これはサイト品質の評価ではありません。",
+      );
+    }
+
     // 両分岐で共通のメタ情報（id/日時/入力/生データ/notices）
     const common = {
       id: randomUUID(),
@@ -131,18 +140,20 @@ export default async function handler(req: Request): Promise<Response> {
       };
     } else {
       const scores = buildScores(bundle, website.riskFindings);
+      // 達成率方式: 評価できたカテゴリのみの加重平均。全滅時は null（評価不能）
       const overallScore = calculateOverallScore(scores);
-      const grade = gradeFromScore(overallScore);
+      const grade = overallScore === null ? null : gradeFromScore(overallScore);
       report = {
         ...common,
         summary: {
           overallScore,
           grade,
-          oneLineDiagnosis: generateOneLineDiagnosis(overallScore, scores),
-          executiveSummary: generateExecutiveSummary(overallScore, scores, bundle),
+          oneLineDiagnosis: generateOneLineDiagnosis(overallScore ?? 0, scores),
+          executiveSummary: generateExecutiveSummary(overallScore ?? 0, scores, bundle),
           siteFetchFailed: false,
         },
         scores,
+        qualitative: generateQualitativeReview(scores, bundle),
         findings: generateFindings(scores, bundle),
         quickWins: generateQuickWins(scores, bundle),
         growthOpportunities: generateGrowthOpportunities(scores, bundle),
