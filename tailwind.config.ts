@@ -26,13 +26,15 @@ export default {
         },
       },
       fontFamily: {
-        // 日本語ビジネス文書向けスタック。Windows では Meiryo ではなく游ゴシック（Medium優先）を使う
+        // Webフォント優先（欧文・数字 = Inter / 和文 = Noto Sans JP）。
+        // 未読込時はOSの日本語ビジネス文書向けスタックへフォールバックする
         sans: [
+          "Inter",
+          "Noto Sans JP",
           "Hiragino Sans",
           "Hiragino Kaku Gothic ProN",
           "Yu Gothic Medium",
           "Yu Gothic",
-          "Noto Sans JP",
           "-apple-system",
           "BlinkMacSystemFont",
           "Segoe UI",

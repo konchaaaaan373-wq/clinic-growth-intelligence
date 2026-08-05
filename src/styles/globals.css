@@ -8,17 +8,16 @@
   }
   body {
     @apply bg-slate-50 text-ink antialiased;
+    /* カーニング有効化 + スコア等の数値は桁が揃うように */
+    font-feature-settings: "kern" 1;
+    font-variant-numeric: tabular-nums;
   }
   h1,
   h2,
   h3 {
     @apply tracking-tight;
     /* 日本語見出しのプロポーショナル詰め */
-    font-feature-settings: "palt" 1;
-  }
-  /* スコア等の数値は桁が揃うように */
-  body {
-    font-variant-numeric: tabular-nums;
+    font-feature-settings: "palt" 1, "kern" 1;
   }
 }
 
@@ -56,7 +55,7 @@
     margin: 14mm 12mm 18mm;
     /* ランニングフッター（対応ブラウザのみ。非対応でも何も表示されないだけで壊れない） */
     @bottom-left {
-      content: "Neco Clinic Report Free — 外部情報に基づく初期レポート";
+      content: "Neco Clinic Report Free｜外部情報に基づく初期レポート";
       font-size: 8pt;
       color: #8b93a1;
     }

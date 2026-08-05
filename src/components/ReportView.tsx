@@ -58,8 +58,7 @@ export default function ReportView({ report, isSample }: Props) {
           <div className="text-[11px] text-ink-soft">外部情報に基づく初期レポート</div>
         </div>
         <div className="mt-1.5 text-2xl font-bold leading-snug text-ink">
-          {BRAND.free} 診断レポート
-          {isSample && "（サンプル）"}
+          {`${BRAND.free} 診断レポート${isSample ? "（サンプル）" : ""}`}
         </div>
         <dl className="mt-2.5 space-y-0.5 text-xs text-ink-muted">
           <div className="flex gap-2">
@@ -91,9 +90,7 @@ export default function ReportView({ report, isSample }: Props) {
           </p>
           <h1 className="text-[28px] font-bold leading-snug text-ink">診断レポート</h1>
           <p className="text-sm text-ink-soft">
-            {report.input.clinicName}（{metaLabel}）／ 対象URL: {report.input.websiteUrl} ／
-            作成日時: {formatDateTime(report.createdAt)}
-            {isSample && "（サンプル）"}
+            {`${report.input.clinicName}（${metaLabel}）／ 対象URL: ${report.input.websiteUrl} ／ 作成日時: ${formatDateTime(report.createdAt)}${isSample ? "（サンプル）" : ""}`}
           </p>
         </div>
         <div className="flex gap-2">
@@ -314,9 +311,9 @@ export default function ReportView({ report, isSample }: Props) {
               : "改善後にもう一度診断し、スコアと集患スタイルの変化を確認する"}
           </li>
         </ol>
+        {/* JSXの改行が文中の半角スペースにならないよう、文は1つのテキストノードにまとめる */}
         <p className="mt-3 border-t border-brand-100 pt-3 text-[13px] leading-relaxed text-ink">
-          実際の初診数に効いた施策を知りたい場合は、{BRAND.analytics}（{BRAND.mmm}）の相談を
-          受け付けています。 お問い合わせ:{" "}
+          {`実際の初診数に効いた施策を知りたい場合は、${BRAND.analytics}（${BRAND.mmm}）の相談を受け付けています。お問い合わせ: `}
           <span className="font-semibold text-brand-800">{CONTACT_EMAIL}</span>
         </p>
         <p className="mt-1.5 text-[11px] text-ink-soft">

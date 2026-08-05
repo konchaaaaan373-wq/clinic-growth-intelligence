@@ -632,7 +632,7 @@ export function calculateMedicalAdRiskScore(
     );
     for (const f of riskFindings) {
       negatives.push(
-        `【文脈確認】「${f.expression}」— 受診促進・副作用説明などの文脈のため減点していません`,
+        `【文脈確認】「${f.expression}」：受診促進・副作用説明などの文脈のため減点していません`,
       );
     }
   } else {
@@ -645,8 +645,8 @@ export function calculateMedicalAdRiskScore(
     for (const f of riskFindings) {
       negatives.push(
         f.severity === "low"
-          ? `【文脈確認】「${f.expression}」— 文脈確認として記録した項目です（減点なし）`
-          : `【${label(f.severity)}】「${f.expression}」— 文脈により確認が望ましい可能性があります`,
+          ? `【文脈確認】「${f.expression}」：文脈確認として記録した項目です（減点なし）`
+          : `【${label(f.severity)}】「${f.expression}」：文脈により確認が望ましい可能性があります`,
       );
     }
     if (counts.high === 0) {
@@ -1523,7 +1523,7 @@ function truncate(s: string, n: number): string {
 // =========================================================
 
 const QUALITATIVE_CLOSING =
-  "この診断が見ているのは“外から見える導線”だけです。診療の質・院内の信頼・ご紹介のつながりといった本当の強みは、点数には写りません。スコアは健康診断の数値のように、定期的に測って変化を楽しむ目安としてお使いください。";
+  "この診断が見ているのは「外から見える導線」だけです。診療の質・院内の信頼・ご紹介のつながりといった本当の強みは、点数には写りません。スコアは健康診断の数値のように、定期的に測って変化を楽しむ目安としてお使いください。";
 
 export function generateQualitativeReview(
   scores: Scores,
@@ -1574,9 +1574,9 @@ export function generateQualitativeReview(
         name: "オールラウンダー型",
         tagline: "どこを切っても隙が少ない優等生",
         description:
-          "外から見える導線はどの角度から見ても整っています。ここから先の伸びしろは“見えない部分”—— 実データでの効果測定に進む準備ができています。",
+          "外から見える導線はどの角度から見ても整っています。ここから先の伸びしろは、外からは見えない部分にあります。実データでの効果測定に進む準備ができています。",
         nextStep:
-          "日別初診数の記録を始め、実データで“本当に効いている施策”を確かめる段階です。",
+          "日別初診数の記録を始め、どの施策が実際に効いているかを実データで確かめる段階です。",
       };
     }
     if (unknownCount >= 2) {
@@ -1585,9 +1585,9 @@ export function generateQualitativeReview(
         name: "未知数ポテンシャル型",
         tagline: "まだ本当の姿を見せていない",
         description:
-          "外から見える情報が限られており、実力の全体像はまだ霧の中です。診療科・SNS・GoogleマップURLなどの情報を追加するほど、この診断は本当の姿に近づきます。",
+          "外から見える情報が少なく、実力の全体像はまだ判断できません。診療科・SNS・GoogleマップURLなどの情報を追加するほど、診断は実態に近づきます。",
         nextStep:
-          "診療科・所在地・SNS・GoogleマップURLを追加して再診断すると、診断の解像度が一気に上がります。",
+          "診療科・所在地・SNS・GoogleマップURLを追加して再診断すると、評価できる範囲が大きく広がります。",
       };
     }
     if (hasBlog && (seo ?? 0) >= 0.6) {
@@ -1596,9 +1596,9 @@ export function generateQualitativeReview(
         name: "コツコツ発信型",
         tagline: "続ける力は、それ自体が資産",
         description:
-          "コラムやお知らせなど、情報発信の習慣が根づいています。発信の継続は一朝一夕に真似できない強みです。あとは発信を予約・来院につなぐ“出口設計”で化けます。",
+          "コラムやお知らせなど、情報発信の習慣が根づいています。発信の継続は一朝一夕に真似できない強みです。あとは発信から予約・来院へつなぐ出口を整えると、この強みがそのまま集患力になります。",
         nextStep:
-          "各コラムから症状解説・予約への内部リンクを1本ずつ足し、発信の“出口”を予約につなげましょう。",
+          "各コラムから症状解説や予約への内部リンクを1本ずつ足し、発信の出口を予約につなげましょう。",
       };
     }
     if ((sns ?? 0) >= 0.6 && (hp ?? 1) < 0.6) {
@@ -1609,7 +1609,7 @@ export function generateQualitativeReview(
         description:
           "SNSでの発信・接点づくりは動いています。一方でHP側の受け皿（予約導線など）に伸びしろがあり、ここを整えると発信の努力が来院に変わりやすくなります。",
         nextStep:
-          "まずはHPの予約導線1本から。受け皿が整うと、これまでの発信がそのまま来院に変わり始めます。",
+          "まずはHPに予約導線を1つ常設するところから。受け皿が整えば、これまでの発信が来院につながりやすくなります。",
       };
     }
     if ((hp ?? 0) >= 0.7 && (sns === null || sns < 0.5)) {
@@ -1663,10 +1663,10 @@ export function generateQualitativeReview(
   if (hasBlog) strengths.push("コラム・お知らせの発信習慣は、信頼の積み立てになっています");
   if (cov.present.length >= 1)
     strengths.push(
-      `${quoteList(cov.present, 2)}など、患者さんが検索する“症状の言葉”で語れています`,
+      `${quoteList(cov.present, 2)}など、患者さんが検索に使う症状の言葉で語れています`,
     );
   if (hasMapsLink) strengths.push("HPから地図への案内があり、来院直前のつまずきが少ない設計です");
-  if (ytKnown) strengths.push("動画という“顔が見える”発信チャネルを持っています");
+  if (ytKnown) strengths.push("動画で院内の雰囲気や医師の人柄を伝えられるチャネルを持っています");
   if (strengths.length === 0) {
     strengths.push(
       "外から見える範囲では強みを特定しきれませんでした（情報を追加すると見えてきます）",
@@ -1676,20 +1676,20 @@ export function generateQualitativeReview(
   // ---- もったいないポイント（責めずに、惜しさを言葉にする・最大3つ）----
   const opportunities: string[] = [];
   if (!hasBooking && !!w && w.status !== "failed")
-    opportunities.push("予約の入り口が見つけにくいのはもったいない点です。導線1本で印象が変わります");
+    opportunities.push("予約の入り口が見つけにくいのがもったいない点です。予約ボタンを1つ常設するだけでも変わります");
   if (textOk && cov.profile && cov.present.length === 0)
     opportunities.push("症状の言葉が少なく、検索してきた患者さんとすれ違いがちです");
   if (anySnsKnown && !hpLinksToSns && !!w && w.status !== "failed")
-    opportunities.push("SNSとHPがすれ違い中です。相互リンクでぐるっと循環がつながります");
+    opportunities.push("SNSとHPが相互にリンクされていません。行き来をつなぐと、SNSの閲覧を予約まで案内できます");
   if (!hasMapsLink && !!w && w.status !== "failed")
-    opportunities.push("地図リンクがなく、来院直前の“最後のひと押し”を逃しやすい状態です");
+    opportunities.push("地図リンクがなく、来院直前の道案内でつまずきやすい状態です");
   if (textOk && !hasBlog)
     opportunities.push("発信の習慣づけはこれからです。月1本のコラムからでも十分始まります");
   const topOpportunities = opportunities.slice(0, 3);
 
   // ---- 講評 ----
   // style.description はカード上部で表示済みのため、講評では繰り返さない
-  const narrative = `${b.input.clinicName || "貴院"}は「${style.emoji} ${style.name}」タイプ — ${style.tagline}、という状態です。${QUALITATIVE_CLOSING}`;
+  const narrative = `${b.input.clinicName || "貴院"}は「${style.emoji} ${style.name}」タイプと診断しました。${QUALITATIVE_CLOSING}`;
 
   return {
     style,
