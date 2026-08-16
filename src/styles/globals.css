@@ -7,17 +7,28 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-slate-50 text-ink antialiased;
-    /* カーニング有効化 + スコア等の数値は桁が揃うように */
+    @apply bg-cream-100 text-ink antialiased;
+    /* カーニング有効化。tabular-nums は tnum 対応フォントでのみ効くため、
+       桁揃えが必要な箇所は .tabular-nums クラス（下の components 層で
+       Inter を優先適用する）を明示して指定する */
     font-feature-settings: "kern" 1;
     font-variant-numeric: tabular-nums;
+    /* 和文本文は小サイズでわずかに字間を空けると読みやすい */
+    letter-spacing: 0.01em;
   }
   h1,
   h2,
   h3 {
-    @apply tracking-tight;
-    /* 日本語見出しのプロポーショナル詰め */
+    @apply font-display;
+    /* 丸ゴシックは詰めすぎると窮屈になるため、プロポーショナル詰め（palt）に
+       ごく僅かな字間を足して、手で組んだような空気感にする */
     font-feature-settings: "palt" 1, "kern" 1;
+    letter-spacing: 0.02em;
+  }
+  /* 見出しの折り返しバランス（対応ブラウザのみ。非対応でも崩れない） */
+  h1,
+  h2 {
+    text-wrap: balance;
   }
 }
 
@@ -26,26 +37,57 @@
     @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
   }
   .card {
-    @apply rounded-lg border border-slate-200 bg-white shadow-card;
+    @apply rounded-2xl border border-slate-200 bg-white shadow-card;
   }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand-600 px-6 py-2.5 font-display text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-cardHover focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-brand-200 bg-white px-5 py-2.5 text-sm font-semibold text-brand-700 transition hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-brand-300 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-brand-200 bg-white px-6 py-2.5 font-display text-sm font-bold text-brand-700 transition hover:-translate-y-0.5 hover:border-brand-300 hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-brand-300 focus:ring-offset-2;
   }
   .label {
     @apply mb-1.5 block text-sm font-medium text-ink;
   }
   .input {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-ink shadow-sm transition placeholder:text-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200;
+    @apply w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-ink shadow-sm transition placeholder:text-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200;
   }
   .badge {
-    @apply inline-flex items-center rounded border px-2 py-0.5 text-xs font-normal;
+    @apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-normal;
   }
   /* レポート内の注記（優先度・難易度など）。バッジではなく文書の注釈として表示する */
   .annotation {
     @apply text-xs text-ink-soft;
+  }
+  /* セクション番号などの風船カラー丸チップ。サイズと塗り色は呼び出し側で指定する。
+     数字は Quicksand（font-display）で風船らしい丸い形にする。
+     Quicksand は tnum 非対応のため桁揃えは指定しない（円の中央寄せで十分） */
+  .num-chip {
+    @apply flex shrink-0 -rotate-3 items-center justify-center rounded-full font-display font-bold text-white;
+  }
+  /* 桁揃え（tabular-nums）を指定した数値には、tnum を持つ Inter を優先適用する。
+     和文Webフォント（Zen Kaku Gothic New 等）は tnum 非対応で数字が
+     プロポーショナルのため、スコア表の桁がここで揃う。
+     「桁を揃えたい場所 = tabular-nums を指定した場所」という対応を保つ */
+  .tabular-nums {
+    font-family: theme(fontFamily.num);
+  }
+  /* 見出しの要所に引く、手描き風の波線マーカー（コーラル）。
+     テキスト下端に repeat-x で敷くだけなので、折り返しにも追従する */
+  .marker-underline {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 8' preserveAspectRatio='none'%3E%3Cpath d='M1 5.5 Q 6 2.5 11 5 T 21 4.5 T 31 5.5 T 39 4.5' fill='none' stroke='%23f08060' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: repeat-x;
+    background-position: 0 100%;
+    background-size: 2.6em 0.42em;
+    padding-bottom: 0.32em;
+  }
+  /* ヒーローなどの背景に散らす紙吹雪ドット（多色・ごく薄く） */
+  .confetti-bg {
+    background-image: radial-gradient(#f08060 1.5px, transparent 1.6px),
+      radial-gradient(#f5c245 1.5px, transparent 1.6px),
+      radial-gradient(#7fc0d4 1.5px, transparent 1.6px),
+      radial-gradient(#af95d5 1.5px, transparent 1.6px);
+    background-size: 220px 190px, 260px 230px, 240px 210px, 280px 250px;
+    background-position: 20px 40px, 110px 130px, 190px 60px, 60px 190px;
   }
 }
 
@@ -57,12 +99,12 @@
     @bottom-left {
       content: "Neco Clinic Report Free｜外部情報に基づく初期レポート";
       font-size: 8pt;
-      color: #8b93a1;
+      color: #7f7565; /* ink-soft（tailwind.config.ts）と同期させる */
     }
     @bottom-right {
       content: counter(page) " / " counter(pages);
       font-size: 8pt;
-      color: #8b93a1;
+      color: #7f7565;
     }
   }
   .no-print {
@@ -70,12 +112,16 @@
   }
   body {
     background: #ffffff !important;
-    color: #1f2733 !important;
+    color: #3b332c !important;
   }
   .card {
     box-shadow: none !important;
-    border-color: #e2e8f0 !important;
+    border-color: #e8e1d2 !important;
     break-inside: avoid;
+  }
+  /* 紙吹雪などの画面向け装飾は印刷しない */
+  .confetti-bg {
+    background-image: none !important;
   }
   /* スコア・提案・リスクなど主要ブロックはページ内で分割しない */
   .card,
@@ -125,11 +171,14 @@
     text-decoration: none !important;
     color: inherit !important;
   }
-  /* スコアバー等の塗り（未評価分のハッチング含む）は
-     「背景グラフィック」設定に依存させない（対応ブラウザでは強制印刷） */
+  /* スコアバー等の塗り（未評価分のハッチング含む）・波線マーカー・番号チップは
+     「背景グラフィック」設定に依存させない（対応ブラウザでは強制印刷）。
+     チップは白文字のため、背景が印刷されないと番号が見えなくなる */
   .bar-fill,
   .bar-track,
-  .bar-hatch {
+  .bar-hatch,
+  .marker-underline,
+  .num-chip {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }

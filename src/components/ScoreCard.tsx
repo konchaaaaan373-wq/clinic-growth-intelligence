@@ -1,4 +1,5 @@
 import { gradeColorClasses } from "../lib/utils";
+import BalloonMark from "./BalloonMark";
 
 type Props = {
   /** null = 取得失敗などで評価不能 */
@@ -44,20 +45,35 @@ export default function ScoreCard({
     <div className="card p-6 sm:p-8">
       <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
         <div className="relative flex-shrink-0">
+          {/* リングの右上でふわふわ浮く風船（装飾） */}
+          {!notEvaluable && (
+            <BalloonMark
+              size={34}
+              color="#f5c245"
+              className="absolute -right-3 -top-2 animate-float"
+            />
+          )}
           <svg width="140" height="140" viewBox="0 0 140 140" aria-hidden="true">
-            <circle cx="70" cy="70" r="52" fill="none" stroke="#e2e8f0" strokeWidth="12" />
+            <defs>
+              {/* 風船カラーのグラデーション。達成量の帯に彩りを持たせる */}
+              <linearGradient id="score-ring" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#e75f3f" />
+                <stop offset="55%" stopColor="#f5c245" />
+                <stop offset="100%" stopColor="#7fc0d4" />
+              </linearGradient>
+            </defs>
+            <circle cx="70" cy="70" r="52" fill="none" stroke="#e8e1d2" strokeWidth="12" />
             {!notEvaluable && (
               <circle
                 cx="70"
                 cy="70"
                 r="52"
                 fill="none"
-                stroke="currentColor"
+                stroke="url(#score-ring)"
                 strokeWidth="12"
                 strokeLinecap="round"
                 strokeDasharray={`${dash} ${circumference}`}
                 transform="rotate(-90 70 70)"
-                className="text-brand-600"
               />
             )}
           </svg>
@@ -66,7 +82,7 @@ export default function ScoreCard({
               <span className="text-lg font-bold text-ink-soft">評価不能</span>
             ) : (
               <>
-                <span className="text-3xl font-bold text-ink">{overallScore}</span>
+                <span className="font-display text-4xl font-bold text-ink">{overallScore}</span>
                 <span className="text-xs text-ink-soft">/ 100</span>
               </>
             )}

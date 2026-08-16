@@ -8,7 +8,7 @@ type Props = {
 const MMM_FULL_SCORE = 10;
 const HATCH_STYLE = {
   backgroundImage:
-    "repeating-linear-gradient(45deg,#e2e8f0,#e2e8f0 4px,#f1f5f9 4px,#f1f5f9 8px)",
+    "repeating-linear-gradient(45deg,#e8e1d2,#e8e1d2 4px,#f3efe4 4px,#f3efe4 8px)",
 } as const;
 
 export default function MMMReadinessPanel({ readiness }: Props) {

@@ -8,14 +8,23 @@
       content="Neco Clinic Report｜クリニックの外部集患力を、URLから無料診断。HP・SNS・MEO・医療広告上の要確認表現を横断チェックし、初診数MMMにつなげるための改善点をレポート化します。"
     />
     <title>Neco Clinic Report｜クリニックの外部集患力を無料診断（Clinic Report Free）</title>
-    <!-- 欧文・数字は Inter、和文は Noto Sans JP。OS差（Windowsの游ゴシック等）による
-         文字組みのばらつきを避け、画面とPDFで同じ見た目にする -->
+    <!-- タイポグラフィの設計:
+         見出し = Quicksand（欧文・数字のジオメトリック丸ゴ）+ Zen Maru Gothic（和文丸ゴ）。
+                  風船の丸いフォルムと揃え、スコアの数字も丸く見せる。
+         本文   = Zen Kaku Gothic New。Zen Maru Gothic と同じ骨格の角ゴシックで、
+                  見出しと血縁のあるファミリーにすることで統一感と本文の可読性を両立する。
+         数字   = 桁揃え（tabular-nums）を指定した箇所のみ Inter。
+                  和文Webフォントは tnum（等幅数字）非対応のため、スコア表の
+                  桁揃えには tnum を持つ Inter を数字用に残す。
+         Webフォントで揃えることで、OS差による文字組みのばらつきを避け、
+         画面とPDFで同じ見た目にする -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Quicksand:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap"
       rel="stylesheet"
     />
+    <meta name="theme-color" content="#fdf8ec" />
   </head>
   <body>
     <div id="root"></div>

@@ -1,13 +1,15 @@
 import { Link } from "react-router-dom";
 import { APP_NAME, BRAND, CONTACT_EMAIL } from "../lib/utils";
+import { BalloonTrio } from "./BalloonMark";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-slate-200 bg-white no-print">
+    <footer className="border-t border-slate-200 bg-cream-50 no-print">
       <div className="container-page py-10">
         <div className="grid gap-8 md:grid-cols-3">
           <div>
-            <div className="text-sm font-bold text-ink">{APP_NAME}</div>
+            <BalloonTrio size={26} />
+            <div className="mt-2 font-display text-sm font-bold text-ink">{APP_NAME}</div>
             <p className="mt-2 max-w-xs text-sm text-ink-muted">
               {BRAND.free} は、HP・SNS・MEO・医療広告上の要確認表現を外部情報から無料診断し、
               初診数MMMへの準備度を可視化します。
