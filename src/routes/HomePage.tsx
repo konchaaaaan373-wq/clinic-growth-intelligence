@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Hero from "../components/Hero";
 import LoadingSteps from "../components/LoadingSteps";
+import { BalloonTrio } from "../components/BalloonMark";
 import QuickUrlAuditForm from "../components/QuickUrlAuditForm";
 import type { AuditInput } from "../lib/types";
 import { requestAudit } from "../lib/api";
 import { BRAND, inferClinicNameFromUrl, saveReport } from "../lib/utils";
+import { balloonColor } from "../lib/palette";
 
 /** 評価フレームワーク（レポートの領域構成と同じ6領域・100点満点） */
 const FRAMEWORK = [
@@ -138,12 +140,16 @@ export default function HomePage() {
             <span>主な確認項目</span>
             <span className="text-right">配点</span>
           </div>
-          {FRAMEWORK.map((d) => (
+          {FRAMEWORK.map((d, i) => (
             <div
               key={d.no}
               className="grid grid-cols-[auto,1fr,auto] gap-x-2 gap-y-1.5 border-b border-slate-200 py-4 sm:grid-cols-[3rem,13rem,1fr,4.5rem] sm:gap-x-6"
             >
-              <span className="text-sm font-bold tabular-nums text-brand-700">{d.no}</span>
+              <span
+                className={`flex h-6 w-6 -rotate-3 items-center justify-center rounded-full text-[10px] font-bold tabular-nums text-white ${balloonColor(i).chipBg}`}
+              >
+                {d.no}
+              </span>
               <h3 className="text-[15px] font-semibold text-ink">{d.label}</h3>
               <span className="text-right text-sm tabular-nums text-ink-muted sm:col-start-4 sm:row-start-1">
                 {d.max}点
@@ -171,10 +177,14 @@ export default function HomePage() {
             </p>
           </div>
           <div className="mt-10 grid gap-8 lg:grid-cols-3">
-            {PRODUCT_STEPS.map((p) => (
+            {PRODUCT_STEPS.map((p, i) => (
               <div key={p.step} className="border-t border-slate-300 pt-4">
-                <div className="flex items-baseline gap-3">
-                  <span className="text-sm font-bold tabular-nums text-brand-700">{p.step}</span>
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`flex h-6 w-6 -rotate-3 items-center justify-center rounded-full text-[11px] font-bold tabular-nums text-white ${balloonColor(i).chipBg}`}
+                  >
+                    {p.step}
+                  </span>
                   <h3 className="text-base font-semibold text-ink">{p.name}</h3>
                 </div>
                 <p className="mt-1 text-xs text-ink-soft">{p.tagline}</p>
@@ -217,9 +227,12 @@ export default function HomePage() {
 
       {/* CTA */}
       <section className="container-page pb-20">
-        <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-card sm:p-10">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-card sm:p-10">
           <div className="mx-auto max-w-xl text-center">
-            <h2 className="text-2xl font-bold text-ink">{BRAND.free} をはじめる</h2>
+            <BalloonTrio size={30} />
+            <h2 className="mt-2 text-2xl font-bold text-ink">
+              <span className="marker-underline">{BRAND.free} をはじめる</span>
+            </h2>
             <p className="mt-2.5 text-sm leading-relaxed text-ink-muted">
               HP URLから、外部情報にもとづく初期レポートを作成します。患者情報は不要です。
               診療科・所在地・SNSなどの情報は、後から追加して評価の精度を高められます。

@@ -1,3 +1,5 @@
+import { sectionColor } from "../lib/palette";
+
 type Props = {
   /** セクション番号（"01" など） */
   no: string;
@@ -12,13 +14,18 @@ type Props = {
 /**
  * レポートの番号付きセクション。
  * カードの箱ではなく、見出し＋ヘアラインの文書スタイルでコンテンツを区切る。
+ * 番号は風船カラー（意味を持たない彩り）の丸チップで示す。
  */
 export default function ReportSection({ no, title, description, children, printBreakBefore }: Props) {
+  const color = sectionColor(no);
   return (
     <section className={printBreakBefore ? "print-page-break" : undefined}>
       <div className="break-inside-avoid break-after-avoid border-b border-slate-300 pb-2">
-        <div className="flex items-baseline gap-3">
-          <span className="text-sm font-bold tabular-nums text-brand-700" aria-hidden>
+        <div className="flex items-center gap-3">
+          <span
+            className={`flex h-7 w-7 shrink-0 -rotate-3 items-center justify-center rounded-full text-[11px] font-bold tabular-nums text-white ${color.chipBg}`}
+            aria-hidden
+          >
             {no}
           </span>
           <h2 className="text-lg font-bold text-ink">{title}</h2>

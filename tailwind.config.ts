@@ -5,28 +5,88 @@ export default {
   theme: {
     extend: {
       colors: {
-        // 医療機関向けの落ち着いたネイビー / ブルーグレー系
+        // 風船テーマの主役色（キービジュアルのコーラルレッドから採色）。
+        // CTAや強調はこのスケールを使う。700以上は白文字でもコントラストを確保
         brand: {
-          50: "#f2f5f9",
-          100: "#e3e9f1",
-          200: "#c7d3e3",
-          300: "#9fb2cd",
-          400: "#6f8bb0",
-          500: "#4d6a95",
-          600: "#3c547a",
-          700: "#324563",
-          800: "#2c3b53",
-          900: "#283347",
-          950: "#1a2130",
+          50: "#fef5f1",
+          100: "#fde7de",
+          200: "#fac9b8",
+          300: "#f6a58a",
+          400: "#f08060",
+          500: "#e75f3f",
+          600: "#d44a2c",
+          700: "#b23c24",
+          800: "#93341f",
+          900: "#7a2e1e",
+          950: "#42160d",
+        },
+        // 風船のアクセントカラー（キービジュアルの黄・空・緑・紫・桃から採色）。
+        // 意味（良し悪し）は持たせず、彩りとして領域・番号の識別に使う
+        sunny: {
+          100: "#fdf0d1",
+          200: "#fbdf9d",
+          400: "#f5c245",
+          600: "#c98d14",
+          800: "#8a5f10",
+        },
+        sky: {
+          100: "#e3f2f6",
+          200: "#c4e4ec",
+          400: "#7fc0d4",
+          600: "#3f8ba3",
+          800: "#2b5f70",
+        },
+        mint: {
+          100: "#e7f3e4",
+          200: "#cfe7c9",
+          400: "#95c98e",
+          600: "#55944f",
+          800: "#3c6a3a",
+        },
+        lavender: {
+          100: "#f0eaf8",
+          200: "#ddd0ee",
+          400: "#af95d5",
+          600: "#7e5cb0",
+          800: "#573f7c",
+        },
+        peach: {
+          100: "#fdeee6",
+          200: "#fbd6c4",
+          400: "#f4a983",
+          600: "#c96a3c",
+          800: "#96502d",
+        },
+        // キービジュアルの生成り背景に合わせたクリーム地
+        cream: {
+          50: "#fefcf6",
+          100: "#fdf8ec",
+          200: "#faf0d9",
+          300: "#f3e4c3",
+        },
+        // 既存コンポーネントの境界線・分割線を一括で温かみのある色に寄せるため、
+        // slate を warm gray（ベージュ寄り）で上書きする
+        slate: {
+          50: "#faf7f0",
+          100: "#f3efe4",
+          200: "#e8e1d2",
+          300: "#d4cbb8",
+          400: "#a89e8c",
+          500: "#8a8070",
+          600: "#6d6455",
+          700: "#57503f",
+          800: "#3f3a2f",
+          900: "#2e2a23",
+          950: "#1f1c17",
         },
         ink: {
-          DEFAULT: "#1f2733",
-          muted: "#5b6472",
-          soft: "#8b93a1",
+          DEFAULT: "#3b332c",
+          muted: "#6b6154",
+          soft: "#8f8574",
         },
       },
       fontFamily: {
-        // Webフォント優先（欧文・数字 = Inter / 和文 = Noto Sans JP）。
+        // 本文: Webフォント優先（欧文・数字 = Inter / 和文 = Noto Sans JP）。
         // 未読込時はOSの日本語ビジネス文書向けスタックへフォールバックする
         sans: [
           "Inter",
@@ -41,10 +101,31 @@ export default {
           "system-ui",
           "sans-serif",
         ],
+        // 見出し: 丸ゴシックで手書き風の温かみを出す
+        display: [
+          "Zen Maru Gothic",
+          "Hiragino Maru Gothic ProN",
+          "Noto Sans JP",
+          "Hiragino Sans",
+          "system-ui",
+          "sans-serif",
+        ],
       },
       boxShadow: {
-        card: "0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06)",
-        cardHover: "0 4px 12px rgba(16, 24, 40, 0.08)",
+        card: "0 1px 2px rgba(93, 64, 28, 0.05), 0 2px 6px rgba(93, 64, 28, 0.06)",
+        cardHover: "0 6px 16px rgba(93, 64, 28, 0.12)",
+      },
+      keyframes: {
+        // 風船がふわふわ浮く動き。装飾のみに使い、本文には適用しない
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-7px)" },
+        },
+      },
+      animation: {
+        float: "float 4s ease-in-out infinite",
+        "float-delay": "float 4s ease-in-out 1.3s infinite",
+        "float-delay2": "float 4s ease-in-out 2.6s infinite",
       },
     },
   },

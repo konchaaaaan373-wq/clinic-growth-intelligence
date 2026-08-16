@@ -200,18 +200,12 @@ export function downloadReportJson(report: AuditReport): void {
 /**
  * グレードに対応する配色クラス。
  * ランクは「外部準備度の区分」であり合否ではないため、信号機色（緑/赤）ではなく
- * ネイビー単色で示す（低スコアを失敗として演出しない）。
+ * ブランド色（コーラル）の単色で示す（低スコアを失敗として演出しない）。
+ * スコアバーの帯色も同様に、達成度による色分けはせず領域ごとの風船カラー
+ * （lib/palette.ts）で識別する。
  */
 export function gradeColorClasses(_grade: "A" | "B" | "C" | "D"): string {
   return "bg-brand-50 text-brand-800 border-brand-300";
-}
-
-/**
- * スコアバーの帯色。達成度による色分け（緑/黄/赤）は行わず、
- * ネイビーの達成量＋スレートの残量で示す。
- */
-export function scoreBarColor(_ratio: number): string {
-  return "bg-brand-600";
 }
 
 export function formatDateTime(iso: string): string {

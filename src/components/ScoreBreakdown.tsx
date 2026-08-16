@@ -1,5 +1,5 @@
 import type { ScoreDetail, Scores } from "../lib/types";
-import { scoreBarColor } from "../lib/utils";
+import { balloonColor } from "../lib/palette";
 
 const ORDER: (keyof Scores)[] = [
   "websiteConversion",
@@ -12,17 +12,16 @@ const ORDER: (keyof Scores)[] = [
 
 const HATCH_STYLE = {
   backgroundImage:
-    "repeating-linear-gradient(45deg,#e2e8f0,#e2e8f0 4px,#f1f5f9 4px,#f1f5f9 8px)",
+    "repeating-linear-gradient(45deg,#e8e1d2,#e8e1d2 4px,#f3efe4 4px,#f3efe4 8px)",
 } as const;
 
-function ScoreRow({ detail }: { detail: ScoreDetail }) {
+function ScoreRow({ detail, index }: { detail: ScoreDetail; index: number }) {
   const notEvaluable = detail.status === "not_evaluable";
   // 達成率の分母は「評価できた項目の合計点」。未評価項目は減点せず分母から除外している
   const evaluableMax = detail.evaluableMaxScore ?? detail.maxScore;
-  const ratio = evaluableMax > 0 ? detail.score / evaluableMax : 0;
   const excluded = detail.maxScore - evaluableMax;
   const unknowns = detail.unknowns ?? [];
-  // バーはカテゴリ満点を全幅とし、獲得分（ネイビー）／評価済み未達分（薄地）／
+  // バーはカテゴリ満点を全幅とし、獲得分（領域カラー）／評価済み未達分（薄地）／
   // 未評価分（ハッチング）の3状態で構成を示す。6/6（未評価9点）が
   // 15/15と同じ見た目にならないようにする
   const fillPct = detail.maxScore > 0 ? (detail.score / detail.maxScore) * 100 : 0;
@@ -56,9 +55,10 @@ function ScoreRow({ detail }: { detail: ScoreDetail }) {
               aria-hidden
             />
           )}
+          {/* 帯色は領域ごとの風船カラー（達成度による良し悪しの色分けはしない） */}
           <div
-            className={`bar-fill absolute inset-y-0 left-0 rounded-full ${scoreBarColor(ratio)}`}
-            style={{ width: `${fillPct}%` }}
+            className="bar-fill absolute inset-y-0 left-0 rounded-full"
+            style={{ width: `${fillPct}%`, backgroundColor: balloonColor(index).hex }}
           />
         </div>
       )}
@@ -109,8 +109,8 @@ function ScoreRow({ detail }: { detail: ScoreDetail }) {
 export default function ScoreBreakdown({ scores }: { scores: Scores }) {
   return (
     <div className="divide-y divide-slate-100">
-      {ORDER.map((key) => (
-        <ScoreRow key={key} detail={scores[key]} />
+      {ORDER.map((key, i) => (
+        <ScoreRow key={key} detail={scores[key]} index={i} />
       ))}
     </div>
   );
