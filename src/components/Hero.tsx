@@ -45,6 +45,8 @@ export default function Hero() {
           <p className="text-xs font-semibold tracking-wide text-brand-700">
             {BRAND.product}｜医療機関向け
           </p>
+          {/* font-black(900)は display スタックの Quicksand が700までのため使わない
+              （欧文が混ざると太さが割れる）。Zen Maru の700で十分な太さが出る */}
           <h1 className="mt-3 text-3xl font-bold leading-snug text-ink sm:text-4xl">
             外部から見える
             <span className="marker-underline">集患導線</span>を、
@@ -112,7 +114,7 @@ export default function Hero() {
                 <span className="text-[11px] font-bold text-ink">総評（エグゼクティブサマリー）</span>
               </div>
               <div className="mt-2 flex items-baseline gap-1.5">
-                <span className="text-2xl font-bold leading-none text-brand-600">
+                <span className="font-display text-2xl font-bold leading-none text-brand-600">
                   {PREVIEW_OVERALL ?? "—"}
                 </span>
                 <span className="text-[10px] text-ink-soft">

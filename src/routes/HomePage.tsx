@@ -145,9 +145,7 @@ export default function HomePage() {
               key={d.no}
               className="grid grid-cols-[auto,1fr,auto] gap-x-2 gap-y-1.5 border-b border-slate-200 py-4 sm:grid-cols-[3rem,13rem,1fr,4.5rem] sm:gap-x-6"
             >
-              <span
-                className={`flex h-6 w-6 -rotate-3 items-center justify-center rounded-full text-[10px] font-bold tabular-nums text-white ${balloonColor(i).chipBg}`}
-              >
+              <span className={`num-chip h-6 w-6 text-[10px] ${balloonColor(i).chipBg}`}>
                 {d.no}
               </span>
               <h3 className="text-[15px] font-semibold text-ink">{d.label}</h3>
@@ -180,9 +178,7 @@ export default function HomePage() {
             {PRODUCT_STEPS.map((p, i) => (
               <div key={p.step} className="border-t border-slate-300 pt-4">
                 <div className="flex items-center gap-3">
-                  <span
-                    className={`flex h-6 w-6 -rotate-3 items-center justify-center rounded-full text-[11px] font-bold tabular-nums text-white ${balloonColor(i).chipBg}`}
-                  >
+                  <span className={`num-chip h-6 w-6 text-[11px] ${balloonColor(i).chipBg}`}>
                     {p.step}
                   </span>
                   <h3 className="text-base font-semibold text-ink">{p.name}</h3>

@@ -82,7 +82,7 @@ export default function ScoreCard({
               <span className="text-lg font-bold text-ink-soft">評価不能</span>
             ) : (
               <>
-                <span className="text-3xl font-bold text-ink">{overallScore}</span>
+                <span className="font-display text-4xl font-bold text-ink">{overallScore}</span>
                 <span className="text-xs text-ink-soft">/ 100</span>
               </>
             )}

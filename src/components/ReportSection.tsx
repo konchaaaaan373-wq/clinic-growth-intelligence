@@ -22,10 +22,7 @@ export default function ReportSection({ no, title, description, children, printB
     <section className={printBreakBefore ? "print-page-break" : undefined}>
       <div className="break-inside-avoid break-after-avoid border-b border-slate-300 pb-2">
         <div className="flex items-center gap-3">
-          <span
-            className={`flex h-7 w-7 shrink-0 -rotate-3 items-center justify-center rounded-full text-[11px] font-bold tabular-nums text-white ${color.chipBg}`}
-            aria-hidden
-          >
+          <span className={`num-chip h-7 w-7 text-[11px] ${color.chipBg}`} aria-hidden>
             {no}
           </span>
           <h2 className="text-lg font-bold text-ink">{title}</h2>

@@ -57,7 +57,7 @@ export default function ReportView({ report, isSample }: Props) {
           <div className="text-sm font-bold tracking-wide text-brand-800">{BRAND.product}</div>
           <div className="text-[11px] text-ink-soft">外部情報に基づく初期レポート</div>
         </div>
-        <div className="mt-1.5 text-2xl font-bold leading-snug text-ink">
+        <div className="mt-1.5 font-display text-2xl font-bold leading-snug text-ink">
           {`${BRAND.free} 診断レポート${isSample ? "（サンプル）" : ""}`}
         </div>
         <dl className="mt-2.5 space-y-0.5 text-xs text-ink-muted">

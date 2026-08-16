@@ -82,14 +82,15 @@ export default {
         ink: {
           DEFAULT: "#3b332c",
           muted: "#6b6154",
-          soft: "#8f8574",
+          // 注記などの小さな文字にも使うため、白地で4:1程度のコントラストを保つ
+          soft: "#7f7565",
         },
       },
       fontFamily: {
-        // 本文: Webフォント優先（欧文・数字 = Inter / 和文 = Noto Sans JP）。
+        // 本文: Zen Kaku Gothic New（見出しの Zen Maru Gothic と同じ骨格の角ゴシック）。
         // 未読込時はOSの日本語ビジネス文書向けスタックへフォールバックする
         sans: [
-          "Inter",
+          "Zen Kaku Gothic New",
           "Noto Sans JP",
           "Hiragino Sans",
           "Hiragino Kaku Gothic ProN",
@@ -101,8 +102,21 @@ export default {
           "system-ui",
           "sans-serif",
         ],
-        // 見出し: 丸ゴシックで手書き風の温かみを出す
+        // 桁揃えが必要な数値（スコア表など）: tnum を持つ Inter を優先する。
+        // Zen Kaku Gothic New は tnum 非対応（数字がプロポーショナル）のため、
+        // tabular-nums 指定箇所はこのスタックで揃える（globals.css 参照）
+        num: [
+          "Inter",
+          "Zen Kaku Gothic New",
+          "Noto Sans JP",
+          "Hiragino Sans",
+          "system-ui",
+          "sans-serif",
+        ],
+        // 見出し・スコア数字: 欧文と数字は Quicksand（丸いジオメトリック）、
+        // 和文は Zen Maru Gothic（丸ゴシック）。風船のフォルムに合わせる
         display: [
+          "Quicksand",
           "Zen Maru Gothic",
           "Hiragino Maru Gothic ProN",
           "Noto Sans JP",
