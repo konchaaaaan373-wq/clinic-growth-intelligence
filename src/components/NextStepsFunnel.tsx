@@ -1,4 +1,5 @@
 import { BRAND } from "../lib/utils";
+import { balloonColor } from "../lib/palette";
 
 const STEPS = [
   {
@@ -44,12 +45,17 @@ export default function NextStepsFunnel() {
       </p>
       <ol className="mt-4 grid gap-3 sm:grid-cols-3">
         {STEPS.map((s, i) => (
-          <li key={s.title} className={`relative rounded-lg border p-4 ${toneClasses[s.tone]}`}>
+          <li key={s.title} className={`relative rounded-xl border p-4 ${toneClasses[s.tone]}`}>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-ink-soft">{s.stage}</span>
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-ink-soft">
+                <span className={`num-chip h-5 w-5 text-[10px] ${balloonColor(i).chipBg}`}>
+                  {i + 1}
+                </span>
+                {s.stage}
+              </span>
               <span className={`badge ${badgeClasses[s.tone]}`}>{s.state}</span>
             </div>
-            <div className="mt-1.5 text-base font-bold text-ink">{s.title}</div>
+            <div className="mt-1.5 font-display text-base font-bold text-ink">{s.title}</div>
             <p className="mt-1 text-sm leading-relaxed text-ink-muted">{s.body}</p>
             {i < STEPS.length - 1 && (
               <span

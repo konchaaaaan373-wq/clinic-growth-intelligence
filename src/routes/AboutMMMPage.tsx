@@ -1,41 +1,59 @@
 import { Link } from "react-router-dom";
 import DisclaimerBox from "../components/DisclaimerBox";
+import PageHero from "../components/PageHero";
 import { MMM_REQUIRED_DATA } from "../lib/scoring";
 import { BRAND, buildConsultMailto } from "../lib/utils";
+import { balloonColor } from "../lib/palette";
 
 export default function AboutMMMPage() {
   return (
-    <div className="container-page py-12">
-      <div className="mx-auto max-w-3xl">
-        <span className="badge border-brand-200 bg-brand-50 text-brand-700">解説</span>
-        <h1 className="mt-3 text-3xl font-bold text-ink">
-          {BRAND.mmm}｜MMM（マーケティング・ミックス・モデリング）とは
-        </h1>
-        <p className="mt-4 text-base leading-relaxed text-ink-muted">
-          {BRAND.mmm} は、<strong className="text-ink">日別初診数などの成果</strong>に対して、広告、SEO記事、
-          YouTube、Instagram、TikTok、ポスティング、曜日、休診日、天気などが
-          <strong className="text-ink">どれくらい関係しているか</strong>を、
-          時系列データから推定する、{BRAND.analytics} の中核機能です。
-        </p>
-
-        <div className="mt-6 card p-6">
+    <>
+      <PageHero
+        eyebrow={`${BRAND.product}｜解説`}
+        title={
+          <>
+            {BRAND.mmm}｜<span className="marker-underline">MMM</span>
+            （マーケティング・ミックス・モデリング）とは
+          </>
+        }
+        lead={
+          <>
+            {BRAND.mmm} は、<strong className="text-ink">日別初診数などの成果</strong>
+            に対して、広告、SEO記事、YouTube、Instagram、TikTok、ポスティング、曜日、休診日、天気などが
+            <strong className="text-ink">どれくらい関係しているか</strong>を、
+            時系列データから推定する、{BRAND.analytics} の中核機能です。
+          </>
+        }
+      />
+      <div className="container-page py-10">
+        <div className="mx-auto max-w-3xl">
+        <div className="card p-6">
           <h2 className="text-lg font-bold text-ink">クリニックにとっての強み</h2>
           <ul className="mt-3 space-y-2 text-sm text-ink-muted">
-            <li className="flex gap-2">
-              <span className="text-brand-600">●</span>
-              オンライン予約だけでなく、電話予約や直接来院を含めた
-              <strong className="text-ink">実成果に近づける</strong>点が強みです。
-            </li>
-            <li className="flex gap-2">
-              <span className="text-brand-600">●</span>
-              1つの施策だけを見るのではなく、複数チャネルを同時に評価し、
-              <strong className="text-ink">どの施策が初診に効いたか</strong>を分解して推定します。
-            </li>
-            <li className="flex gap-2">
-              <span className="text-brand-600">●</span>
-              個々の患者データではなく、日別の集計データを使うため、
-              個人情報に踏み込まずに分析しやすい点も特長です。
-            </li>
+            {[
+              <>
+                オンライン予約だけでなく、電話予約や直接来院を含めた
+                <strong className="text-ink">実成果に近づける</strong>点が強みです。
+              </>,
+              <>
+                1つの施策だけを見るのではなく、複数チャネルを同時に評価し、
+                <strong className="text-ink">どの施策が初診に効いたか</strong>を分解して推定します。
+              </>,
+              <>
+                個々の患者データではなく、日別の集計データを使うため、
+                個人情報に踏み込まずに分析しやすい点も特長です。
+              </>,
+            ].map((body, i) => (
+              <li key={i} className="flex items-baseline gap-2">
+                {/* 風船カラーの丸ドット（識別のための彩り） */}
+                <span
+                  aria-hidden
+                  className="inline-block h-2 w-2 shrink-0 translate-y-[-1px] rounded-full"
+                  style={{ backgroundColor: balloonColor(i).hex }}
+                />
+                <span>{body}</span>
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -78,7 +96,8 @@ export default function AboutMMMPage() {
             {BRAND.analytics}について相談する →
           </a>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

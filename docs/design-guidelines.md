@@ -82,7 +82,19 @@ UI・レポート（画面/PDF）の見た目に関するルール。コピー�
   依存させない（背景が印刷されないと白文字が見えなくなる）。
   紙吹雪などの画面向け装飾は印刷では出さない。
 
-## 6. キービジュアル（Canva）
+## 6. ブランドの一貫性（風船ビュー）
+
+- **下層ページの見出し帯は `PageHero`**（`src/components/PageHero.tsx`）を使う。
+  クリーム地＋薄い紙吹雪＋浮かぶ風船で、どのページでも同じ「顔」にする。
+  トップページのみ大きな `Hero`（キービジュアル入り）を使う。
+- 装飾の風船は `BalloonMark` / `BalloonTrio` を使い、SVGを都度手書きしない
+  （フォルムのばらつきを防ぐ）。
+- ファビコンは `public/favicon.svg`（コーラルの風船）、OGP画像は
+  `public/images/ogp.png`（キービジュアルの1200x630クロップ）。
+  キービジュアルを差し替えたらOGPも再生成する（`index.html` の og:image は
+  絶対URLのため、ドメイン変更時に更新が必要）。
+
+## 7. キービジュアル（Canva）
 
 - 風船のキービジュアルは Canva で作成・管理する
   （デザイン名: Joyful Balloons Against Cream Sky Illustration）。

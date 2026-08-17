@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import type { AuditReport } from "../lib/types";
 import { loadReport, BRAND } from "../lib/utils";
 import ReportView from "../components/ReportView";
+import { BalloonTrio } from "../components/BalloonMark";
 
 type LocationState = { report?: AuditReport } | null;
 
@@ -24,7 +25,10 @@ export default function ResultsPage() {
     return (
       <div className="container-page py-20">
         <div className="mx-auto max-w-lg card p-8 text-center">
-          <h1 className="text-xl font-bold text-ink">診断結果が見つかりません</h1>
+          <div className="flex justify-center">
+            <BalloonTrio size={32} />
+          </div>
+          <h1 className="mt-3 text-xl font-bold text-ink">診断結果が見つかりません</h1>
           <p className="mt-2 text-sm text-ink-muted">
             まだ診断を実行していないか、結果が保存されていない可能性があります。
             トップページからHP URLを入力すると、{BRAND.free} を開始できます。

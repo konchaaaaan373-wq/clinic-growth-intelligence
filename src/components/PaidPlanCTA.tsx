@@ -1,4 +1,5 @@
 import { BRAND, buildConsultMailto } from "../lib/utils";
+import BalloonMark from "./BalloonMark";
 
 type Props = {
   clinicName?: string;
@@ -8,7 +9,13 @@ export default function PaidPlanCTA({ clinicName }: Props) {
   const mailto = buildConsultMailto(clinicName);
 
   return (
-    <div className="rounded-xl border border-brand-200 bg-white p-6 shadow-card sm:p-8">
+    <div className="relative overflow-hidden rounded-2xl border border-brand-200 bg-white p-6 shadow-card sm:p-8">
+      {/* 右上でふわふわ浮く風船（装飾） */}
+      <BalloonMark
+        size={44}
+        color="#7fc0d4"
+        className="absolute right-6 top-5 hidden animate-float sm:block"
+      />
       <div className="text-xs font-semibold tracking-wide text-brand-700">次のステップ</div>
       <h3 className="mt-1 text-lg font-bold text-ink sm:text-xl">
         実際の初診数で施策効果を見たい場合
